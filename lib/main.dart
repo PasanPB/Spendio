@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'signup.dart'; // Import the signup.dart file
+import 'signup.dart'; // Ensure this file exists and has the LoginSignupPage class
 
 void main() {
   runApp(FinanceApp());
@@ -9,6 +9,7 @@ class FinanceApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false, // Hides the debug banner
       title: 'Finance App',
       theme: ThemeData(
         primaryColor: Color(0xFF405DE6),
@@ -17,7 +18,7 @@ class FinanceApp extends StatelessWidget {
       ),
       home: HomePage(), // Set HomePage as the initial route
       routes: {
-        '/loginSignup': (context) => LoginSignupPage(), // Add route for LoginSignupPage
+        '/loginSignup': (context) => LoginSignupPage(), // Ensure this route works
       },
     );
   }
@@ -35,6 +36,8 @@ class HomePage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            Icon(Icons.monetization_on, size: 100, color: Colors.blue), // Finance icon
+            SizedBox(height: 20),
             Text(
               'Welcome to the Finance App!',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -51,7 +54,7 @@ class HomePage extends StatelessWidget {
               },
               child: Text(
                 'Go to Login/Signup',
-                style: TextStyle(fontSize: 18),
+                style: TextStyle(fontSize: 18, color: Colors.white),
               ),
             ),
           ],
