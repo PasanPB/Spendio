@@ -46,6 +46,13 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
+                      shadows: [
+                        Shadow(
+                          blurRadius: 4,
+                          color: Colors.black.withOpacity(0.3),
+                          offset: Offset(2, 2),
+                        ),
+                      ],
                     ),
                   ),
                   SizedBox(height: 20),
@@ -120,7 +127,7 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
                   // Login/Signup Button
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
+                      foregroundColor: Color(0xFF405DE6), backgroundColor: Colors.white.withOpacity(0.9), // Instagram blue
                       padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
@@ -133,7 +140,6 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
                       isLogin ? 'Login' : 'Sign Up',
                       style: TextStyle(
                         fontSize: 18,
-                        color: Color(0xFF405DE6), // Instagram blue
                       ),
                     ),
                   ),
