@@ -1,62 +1,74 @@
 import 'package:flutter/material.dart';
 import 'signup.dart';
-import 'create_account.dart'; // Ensure this file exists and has the LoginSignupPage class
+import 'create_account.dart';
+import 'add_expenses.dart';
 
 void main() {
-  runApp(FinanceApp());
+  runApp(const MyApp());
 }
 
-class FinanceApp extends StatelessWidget {
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false, // Hides the debug banner
-      title: 'Finance App',
+      title: 'Finance Management App',
       theme: ThemeData(
-        primaryColor: Color(0xFF405DE6),
-        hintColor: Color(0xFF833AB4),
-        scaffoldBackgroundColor: Colors.white,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
       ),
-      home: HomePage(), // Set HomePage as the initial route
+      initialRoute: '/', // Default page
       routes: {
-        '/loginSignup': (context) => LoginSignupPage(), // Ensure this route works
+        '/': (context) => const MyHomePage(title: 'Home'),
+        '/signup': (context) => LoginSignupPage(),
+        '/createAccount': (context) => CreateAccountPage(),
+        '/addExpenses': (context) => DashboardPage(),
       },
     );
   }
 }
 
-class HomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key, required this.title});
+
+  final String title;
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Finance App Home'),
-        backgroundColor: Theme.of(context).primaryColor,
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: Text(widget.title),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.monetization_on, size: 100, color: Colors.blue), // Finance icon
-            SizedBox(height: 20),
-            Text(
-              'Welcome to the Finance App!',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20),
+          children: <Widget>[
             ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).primaryColor,
-                padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-              ),
               onPressed: () {
-                // Navigate to the Login/Signup Page
-                Navigator.pushNamed(context, '/loginSignup');
+                Navigator.pushNamed(context, '/signup');
               },
-              child: Text(
-                'Go to Login/Signup',
-                style: TextStyle(fontSize: 18, color: Colors.white),
-              ),
+              child: const Text('Go to Signup'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/createAccount');
+              },
+              child: const Text('Go to Create Account'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/addExpenses');
+              },
+              child: const Text('Go to Add Expenses'),
             ),
           ],
         ),
