@@ -1,30 +1,27 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:flutter_finance_management/main.dart';
+import 'package:flutter_finance_management/signup.dart'; // Update the path if needed
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('LoginSignupPage UI Test', (WidgetTester tester) async {
+    // Load the login/signup page
+    await tester.pumpWidget(MaterialApp(home: LoginSignupPage()));
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // Check if "Welcome Back!" or "Create Account" text is present
+    expect(find.text('Welcome Back!'), findsOneWidget);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
+    // Check if email and password fields exist
+    expect(find.byType(TextField), findsNWidgets(2));
+
+    // Check if login button is present
+    expect(find.text('Login'), findsOneWidget);
+
+    // Toggle between login and sign-up
+    await tester.tap(find.text('Create an account'));
     await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    
+    // Now the sign-up text should be visible
+    expect(find.text('Create Account'), findsOneWidget);
+    expect(find.text('Already have an account? Login'), findsOneWidget);
   });
 }

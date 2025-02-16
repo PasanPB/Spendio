@@ -124,7 +124,15 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    onPressed: () {},
+                    onPressed: () {
+                      if (isLogin) {
+                        // Navigate to the dashboard after login
+                        Navigator.pushReplacementNamed(context, '/addExpenses');
+                      } else {
+                        // Navigate to account creation
+                        Navigator.pushReplacementNamed(context, '/createAccount');
+                      }
+                    },
                     child: Text(
                       isLogin ? 'Login' : 'Sign Up',
                       style: TextStyle(fontSize: 18),
@@ -158,16 +166,28 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      SizedBox(
-                        width: 40,
-                        height: 40,
-                        child: Image.asset('assets/google.png'),
+                      GestureDetector(
+                        onTap: () {
+                          // Add Google login functionality
+                          print("Google login tapped");
+                        },
+                        child: SizedBox(
+                          width: 40,
+                          height: 40,
+                          child: Image.asset('assets/google.png'),
+                        ),
                       ),
                       SizedBox(width: 20),
-                      SizedBox(
-                        width: 40,
-                        height: 40,
-                        child: Image.asset('assets/facebook.png'),
+                      GestureDetector(
+                        onTap: () {
+                          // Add Facebook login functionality
+                          print("Facebook login tapped");
+                        },
+                        child: SizedBox(
+                          width: 40,
+                          height: 40,
+                          child: Image.asset('assets/facebook.png'),
+                        ),
                       ),
                     ],
                   ),
