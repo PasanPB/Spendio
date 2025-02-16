@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'signup.dart'; // Ensure this file exists and has the LoginSignupPage class
+import 'signup.dart';
+import 'create_account.dart'; // Ensure this file exists and has the LoginSignupPage class
 
 void main() {
   runApp(FinanceApp());

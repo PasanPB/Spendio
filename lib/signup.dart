@@ -15,12 +15,12 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Color(0xFF405DE6), // Instagram blue
-              Color(0xFF5851DB), // Instagram purple
-              Color(0xFF833AB4), // Instagram violet
-              Color(0xFFC13584), // Instagram pink
-              Color(0xFFE1306C), // Instagram red
-              Color(0xFFFD1D1D), // Instagram orange
+              Color(0xFF405DE6),
+              Color(0xFF5851DB),
+              Color(0xFF833AB4),
+              Color(0xFFC13584),
+              Color(0xFFE1306C),
+              Color(0xFFFD1D1D),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -33,9 +33,8 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // App Logo or Branding
                   Icon(
-                    Icons.monetization_on, // Finance-related icon
+                    Icons.monetization_on,
                     size: 80,
                     color: Colors.white,
                   ),
@@ -56,8 +55,6 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
                     ),
                   ),
                   SizedBox(height: 20),
-
-                  // Email Field
                   TextField(
                     decoration: InputDecoration(
                       labelText: 'Email',
@@ -77,8 +74,6 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
                     style: TextStyle(color: Colors.white),
                   ),
                   SizedBox(height: 16.0),
-
-                  // Password Field
                   TextField(
                     obscureText: true,
                     decoration: InputDecoration(
@@ -99,8 +94,6 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
                     style: TextStyle(color: Colors.white),
                   ),
                   SizedBox(height: 16.0),
-
-                  // Confirm Password Field (for Signup)
                   if (!isLogin) ...[
                     TextField(
                       obscureText: true,
@@ -123,29 +116,21 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
                     ),
                     SizedBox(height: 16.0),
                   ],
-
-                  // Login/Signup Button
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      foregroundColor: Color(0xFF405DE6), backgroundColor: Colors.white.withOpacity(0.9), // Instagram blue
+                      foregroundColor: Color(0xFF405DE6), backgroundColor: Colors.white.withOpacity(0.9),
                       padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    onPressed: () {
-                      // Handle login/signup logic here
-                    },
+                    onPressed: () {},
                     child: Text(
                       isLogin ? 'Login' : 'Sign Up',
-                      style: TextStyle(
-                        fontSize: 18,
-                      ),
+                      style: TextStyle(fontSize: 18),
                     ),
                   ),
                   SizedBox(height: 16.0),
-
-                  // Toggle between Login and Signup
                   TextButton(
                     onPressed: () {
                       setState(() {
@@ -154,62 +139,35 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
                     },
                     child: Text(
                       isLogin ? 'Create an account' : 'Already have an account? Login',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                      ),
+                      style: TextStyle(color: Colors.white, fontSize: 16),
                     ),
                   ),
-
-                  // Or Divider
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16.0),
                     child: Row(
                       children: [
-                        Expanded(
-                          child: Divider(
-                            color: Colors.white,
-                            thickness: 1,
-                          ),
-                        ),
+                        Expanded(child: Divider(color: Colors.white, thickness: 1)),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: Text(
-                            'OR',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                            ),
-                          ),
+                          child: Text('OR', style: TextStyle(color: Colors.white, fontSize: 16)),
                         ),
-                        Expanded(
-                          child: Divider(
-                            color: Colors.white,
-                            thickness: 1,
-                          ),
-                        ),
+                        Expanded(child: Divider(color: Colors.white, thickness: 1)),
                       ],
                     ),
                   ),
-
-                  // Social Login Buttons
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      IconButton(
-                        icon: Image.asset('assets/google.png'), // Add Google icon asset
-                        iconSize: 40,
-                        onPressed: () {
-                          // Handle Google login
-                        },
+                      SizedBox(
+                        width: 40,
+                        height: 40,
+                        child: Image.asset('assets/google.png'),
                       ),
                       SizedBox(width: 20),
-                      IconButton(
-                        icon: Image.asset('assets/facebook.png'), // Add Facebook icon asset
-                        iconSize: 40,
-                        onPressed: () {
-                          // Handle Facebook login
-                        },
+                      SizedBox(
+                        width: 40,
+                        height: 40,
+                        child: Image.asset('assets/facebook.png'),
                       ),
                     ],
                   ),
