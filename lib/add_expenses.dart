@@ -260,21 +260,15 @@ class _DashboardPageState extends State<DashboardPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // App Logo with Floating Animation
-                TweenAnimationBuilder(
-                  tween: Tween(begin: -20.0, end: 0.0),
-                  duration: Duration(milliseconds: 1000),
-                  curve: Curves.easeInOut,
-                  builder: (context, value, child) {
-                    return Transform.translate(
-                      offset: Offset(0, value),
-                      child: child,
-                    );
-                  },
+                // App Logo
+                Center(
                   child: Image.asset(
                     'assets/assets/logo.png', // Replace with your logo path
-                    width: 80, // Adjust size as needed
-                    height: 80,
+                    width: 100, // Adjust size as needed
+                    height: 100,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Icon(Icons.error, size: 100, color: Colors.white); // Fallback if image fails to load
+                    },
                   ),
                 ),
                 SizedBox(height: 16),
