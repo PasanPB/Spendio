@@ -11,7 +11,7 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage> {
   File? _billImage;
-  Map<String, double> _expenses = {
+  final Map<String, double> _expenses = {
     'Food': 0.0,
     'Transport': 0.0,
     'Groceries': 0.0,
@@ -21,13 +21,23 @@ class _DashboardPageState extends State<DashboardPage> {
   };
 
   // Default icon map for predefined categories
-  Map<String, IconData> _categoryIcons = {
+  final Map<String, IconData> _categoryIcons = {
     'Food': Icons.fastfood,
     'Transport': Icons.directions_car,
     'Groceries': Icons.local_grocery_store,
     'Clothes': Icons.checkroom,
     'Rent': Icons.house,
     'Other': Icons.account_tree,
+  };
+
+  // Color map for each category
+  final Map<String, Color> _categoryColors = {
+    'Food': Color(0xFF405DE6), // Blue
+    'Transport': Color(0xFF833AB4), // Purple
+    'Groceries': Color(0xFFE1306C), // Pink
+    'Clothes': Color(0xFF5851DB), // Indigo
+    'Rent': Color(0xFFC13584), // Magenta
+    'Other': Color(0xFFFD1D1D), // Red
   };
 
   Future<void> _scanBill() async {
@@ -126,6 +136,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   setState(() {
                     _expenses[category] = double.parse(amount);
                     _categoryIcons[category] = Icons.category; // Default icon for new categories
+                    _categoryColors[category] = Colors.primaries[_expenses.length % Colors.primaries.length]; // Assign a random color
                   });
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Added new category: $category with Rs. $amount')),
@@ -141,62 +152,88 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  // Expense Button Widget
+  // Expense Button Widget with Animation
   Widget _buildExpenseButton(String category) {
-    return ElevatedButton(
-      onPressed: () {
-        // Show a dialog to enter the expense amount
-        _showExpenseDialog(category);
+    return TweenAnimationBuilder(
+      tween: Tween(begin: 0.0, end: 1.0),
+      duration: Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+      builder: (context, value, child) {
+        return Transform.scale(
+          scale: value,
+          child: child,
+        );
       },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Color(0xFF405DE6), // Background color
-        padding: EdgeInsets.all(12),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(_categoryIcons[category], size: 38, color: Colors.white),
-          SizedBox(height: 6),
-          Text(
-            category,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+      child: ElevatedButton(
+        onPressed: () {
+          _showExpenseDialog(category);
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: _categoryColors[category]!.withOpacity(0.8),
+          padding: EdgeInsets.all(8), // Reduced padding
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8), // Smaller border radius
           ),
-        ],
+          elevation: 3,
+          shadowColor: Colors.black.withOpacity(0.2),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(_categoryIcons[category], size: 24, color: Colors.white), // Smaller icon
+            SizedBox(height: 4),
+            Text(
+              category,
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white), // Smaller text
+            ),
+          ],
+        ),
       ),
     );
   }
 
   // Pie Chart Widget
   Widget _buildPieChart() {
-    return Container(
-      height: 200,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: Offset(0, 4),
+    return TweenAnimationBuilder(
+      tween: Tween(begin: 0.0, end: 1.0),
+      duration: Duration(milliseconds: 800),
+      curve: Curves.easeInOut,
+      builder: (context, value, child) {
+        return Opacity(
+          opacity: value,
+          child: Transform.scale(
+            scale: value,
+            child: child,
           ),
-        ],
-      ),
-      child: PieChart(
-        PieChartData(
-          sections: _expenses.entries.map((entry) {
-            return PieChartSectionData(
-              value: entry.value,
-              color: Color(0xFF405DE6),
-              title: '${entry.value}%',
-              radius: 50,
-              titleStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
-            );
-          }).toList(),
-          centerSpaceRadius: 40,
-          sectionsSpace: 3,
+        );
+      },
+      child: Container(
+        height: 200,
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.9),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 8,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: PieChart(
+          PieChartData(
+            sections: _expenses.entries.map((entry) {
+              return PieChartSectionData(
+                value: entry.value,
+                color: _categoryColors[entry.key], // Use category-specific color
+                title: '${entry.value}%',
+                radius: 50,
+                titleStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
+              );
+            }).toList(),
+            centerSpaceRadius: 40,
+            sectionsSpace: 3,
+          ),
         ),
       ),
     );
@@ -205,87 +242,102 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFF5F5F5),
-      appBar: AppBar(
-        title: Text('Dashboard', style: TextStyle(fontWeight: FontWeight.bold)),
-        centerTitle: true,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Color(0xFF405DE6),
-                Color(0xFF833AB4),
-                Color(0xFFE1306C),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFF405DE6),
+              Color(0xFF833AB4),
+              Color(0xFFE1306C),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
         ),
-        elevation: 3,
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Expense Overview',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // App Logo with Floating Animation
+                TweenAnimationBuilder(
+                  tween: Tween(begin: -20.0, end: 0.0),
+                  duration: Duration(milliseconds: 1000),
+                  curve: Curves.easeInOut,
+                  builder: (context, value, child) {
+                    return Transform.translate(
+                      offset: Offset(0, value),
+                      child: child,
+                    );
+                  },
+                  child: Image.asset(
+                    'assets/assets/logo.png', // Replace with your logo path
+                    width: 80, // Adjust size as needed
+                    height: 80,
+                  ),
                 ),
-              ),
-              SizedBox(height: 16),
+                SizedBox(height: 16),
 
-              // Pie Chart Section
-              _buildPieChart(),
-              SizedBox(height: 16),
+                Text(
+                  'Expense Overview',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(height: 16),
 
-              // Scan Bill Button
-              Center(
-                child: ElevatedButton.icon(
-                  onPressed: _scanBill,
-                  icon: Icon(Icons.camera_alt, color: Colors.white),
-                  label: Text('Scan Bill', style: TextStyle(color: Colors.white)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF405DE6),
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                // Pie Chart Section
+                _buildPieChart(),
+                SizedBox(height: 16),
+
+                // Scan Bill Button
+                Center(
+                  child: ElevatedButton.icon(
+                    onPressed: _scanBill,
+                    icon: Icon(Icons.camera_alt, color: Colors.white),
+                    label: Text('Scan Bill', style: TextStyle(color: Colors.white)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xFF405DE6).withOpacity(0.8),
+                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      elevation: 5,
+                      shadowColor: Colors.black.withOpacity(0.3),
                     ),
                   ),
                 ),
-              ),
-              SizedBox(height: 16),
+                SizedBox(height: 16),
 
-              // Expense Category Buttons
-              Text(
-                'Add Expenses',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+                // Expense Category Buttons
+                Text(
+                  'Add Expenses',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
-              ),
-              SizedBox(height: 12),
+                SizedBox(height: 12),
 
-              GridView(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                  childAspectRatio: 1.1,
+                GridView(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3, // More columns for smaller buttons
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                    childAspectRatio: 1, // Adjust height of buttons
+                  ),
+                  children: _expenses.keys.map((category) {
+                    return _buildExpenseButton(category);
+                  }).toList(),
                 ),
-                children: _expenses.keys.map((category) {
-                  return _buildExpenseButton(category);
-                }).toList(),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -293,7 +345,7 @@ class _DashboardPageState extends State<DashboardPage> {
       // Floating Action Button for Adding New Expense Category
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddCategoryDialog,
-        backgroundColor: Color(0xFF405DE6),
+        backgroundColor: Color(0xFF405DE6).withOpacity(0.8),
         child: Icon(Icons.add, color: Colors.white),
       ),
     );
