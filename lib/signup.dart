@@ -33,10 +33,14 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.monetization_on,
-                    size: 80,
-                    color: Colors.white,
+                  // Logo
+                  Image.asset(
+                    'assets/assets/logo.png', // Replace with your logo path
+                    width: 100, // Adjust size as needed
+                    height: 100,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Icon(Icons.error, size: 100, color: Colors.white); // Fallback if image fails to load
+                    },
                   ),
                   SizedBox(height: 20),
                   Text(
