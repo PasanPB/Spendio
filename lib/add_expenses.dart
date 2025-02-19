@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:image_picker/image_picker.dart'; // Add image_picker package
 import 'dart:io';
 
 class DashboardPage extends StatefulWidget {
@@ -40,8 +41,51 @@ class _DashboardPageState extends State<DashboardPage> {
     'Other': Color(0xFFFD1D1D), // Red
   };
 
+  // Image Picker instance
+  final ImagePicker _picker = ImagePicker();
+
+  // Scan bill logic
   Future<void> _scanBill() async {
-    // Scan bill logic
+    // Show a dialog to choose between camera and gallery
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Choose Option'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: Icon(Icons.camera_alt),
+                title: Text('Capture Photo'),
+                onTap: () async {
+                  Navigator.pop(context); // Close the dialog
+                  final XFile? image = await _picker.pickImage(source: ImageSource.camera);
+                  if (image != null) {
+                    setState(() {
+                      _billImage = File(image.path);
+                    });
+                  }
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.photo_library),
+                title: Text('Choose from Gallery'),
+                onTap: () async {
+                  Navigator.pop(context); // Close the dialog
+                  final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+                  if (image != null) {
+                    setState(() {
+                      _billImage = File(image.path);
+                    });
+                  }
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   // Show dialog to enter expense amount
@@ -305,6 +349,35 @@ class _DashboardPageState extends State<DashboardPage> {
                   ),
                 ),
                 SizedBox(height: 16),
+
+                // Display the scanned bill image (if available)
+                if (_billImage != null)
+                  Center(
+                    child: Column(
+                      children: [
+                        Text(
+                          'Scanned Bill:',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Container(
+                          height: 150,
+                          width: 150,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            image: DecorationImage(
+                              image: FileImage(_billImage!),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
 
                 // Expense Category Buttons
                 Text(
