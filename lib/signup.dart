@@ -35,14 +35,15 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
                 children: [
                   // Logo
                   Image.asset(
-                    'assets/assets/logo.png', // Replace with your logo path
-                    width: 100, // Adjust size as needed
+                    'assets/assets/logo.png',
+                    width: 100,
                     height: 100,
                     errorBuilder: (context, error, stackTrace) {
-                      return Icon(Icons.error, size: 100, color: Colors.white); // Fallback if image fails to load
+                      return Icon(Icons.error, size: 100, color: Colors.white);
                     },
                   ),
                   SizedBox(height: 20),
+                  // Title
                   Text(
                     isLogin ? 'Welcome Back!' : 'Create Account',
                     style: TextStyle(
@@ -59,83 +60,28 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
                     ),
                   ),
                   SizedBox(height: 20),
-                  TextField(
-                    decoration: InputDecoration(
-                      labelText: 'Email',
-                      labelStyle: TextStyle(color: Colors.white),
-                      prefixIcon: Icon(Icons.email, color: Colors.white),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: Colors.white),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: Colors.white),
-                      ),
-                      filled: true,
-                      fillColor: Colors.white.withOpacity(0.2),
-                    ),
-                    style: TextStyle(color: Colors.white),
-                  ),
+                  // Input Fields
+                  _buildTextField(Icons.email, 'Email'),
                   SizedBox(height: 16.0),
-                  TextField(
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      labelStyle: TextStyle(color: Colors.white),
-                      prefixIcon: Icon(Icons.lock, color: Colors.white),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: Colors.white),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: Colors.white),
-                      ),
-                      filled: true,
-                      fillColor: Colors.white.withOpacity(0.2),
-                    ),
-                    style: TextStyle(color: Colors.white),
-                  ),
+                  _buildTextField(Icons.lock, 'Password', obscureText: true),
                   SizedBox(height: 16.0),
                   if (!isLogin) ...[
-                    TextField(
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        labelText: 'Confirm Password',
-                        labelStyle: TextStyle(color: Colors.white),
-                        prefixIcon: Icon(Icons.lock, color: Colors.white),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(color: Colors.white),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(color: Colors.white),
-                        ),
-                        filled: true,
-                        fillColor: Colors.white.withOpacity(0.2),
-                      ),
-                      style: TextStyle(color: Colors.white),
-                    ),
+                    _buildTextField(Icons.lock, 'Confirm Password', obscureText: true),
                     SizedBox(height: 16.0),
                   ],
+                  // Login Button
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      foregroundColor: Color(0xFF405DE6), backgroundColor: Colors.white.withOpacity(0.9),
+                      foregroundColor: Color(0xFF405DE6),
+                      backgroundColor: Colors.white.withOpacity(0.9),
                       padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                     onPressed: () {
-                      if (isLogin) {
-                        // Navigate to the dashboard after login
-                        Navigator.pushReplacementNamed(context, '/addExpenses');
-                      } else {
-                        // Navigate to account creation
-                        Navigator.pushReplacementNamed(context, '/createAccount');
-                      }
+                      Navigator.pushReplacementNamed(
+                          context, isLogin ? '/addExpenses' : '/createAccount');
                     },
                     child: Text(
                       isLogin ? 'Login' : 'Sign Up',
@@ -154,6 +100,7 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
                       style: TextStyle(color: Colors.white, fontSize: 16),
                     ),
                   ),
+                  // OR Divider
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16.0),
                     child: Row(
@@ -167,38 +114,61 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
                       ],
                     ),
                   ),
+                  // Social Login Buttons
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      GestureDetector(
-                        onTap: () {
-                          // Add Google login functionality
-                          print("Google login tapped");
-                        },
-                        child: SizedBox(
-                          width: 40,
-                          height: 40,
-                          child: Image.asset('assets/assets/google.png'),
-                        ),
-                      ),
+                      _buildSocialButton('assets/assets/google.png', () {
+                        print("Google login tapped");
+                      }),
                       SizedBox(width: 20),
-                      GestureDetector(
-                        onTap: () {
-                          // Add Facebook login functionality
-                          print("Facebook login tapped");
-                        },
-                        child: SizedBox(
-                          width: 40,
-                          height: 40,
-                          child: Image.asset('assets/assets/facebook.png'),
-                        ),
-                      ),
+                      _buildSocialButton('assets/assets/facebook.png', () {
+                        print("Facebook login tapped");
+                      }),
                     ],
                   ),
                 ],
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  // Custom Input Field Widget
+  Widget _buildTextField(IconData icon, String hint, {bool obscureText = false}) {
+    return TextField(
+      obscureText: obscureText,
+      decoration: InputDecoration(
+        prefixIcon: Icon(icon, color: Colors.white),
+        hintText: hint,
+        hintStyle: TextStyle(color: Colors.white70),
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.2),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide.none,
+        ),
+      ),
+      style: TextStyle(color: Colors.white),
+    );
+  }
+
+  // Custom Social Button Widget
+  Widget _buildSocialButton(String assetPath, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.white.withOpacity(0.2),
+        ),
+        padding: EdgeInsets.all(10),
+        child: Image.asset(
+          assetPath,
+          width: 40,
+          height: 40,
         ),
       ),
     );
