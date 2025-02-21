@@ -15,12 +15,12 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Color(0xFF405DE6),
-              Color(0xFF5851DB),
-              Color(0xFF833AB4),
-              Color(0xFFC13584),
-              Color(0xFFE1306C),
-              Color(0xFFFD1D1D),
+              Color(0xFF405DE6), // Instagram blue
+              Color(0xFF5851DB), // Instagram purple
+              Color(0xFF833AB4), // Instagram violet
+              Color(0xFFC13584), // Instagram pink
+              Color(0xFFE1306C), // Instagram red
+              Color(0xFFFD1D1D), // Instagram orange
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -29,102 +29,106 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
         child: Center(
           child: SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(20.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // Logo
                   Image.asset(
-                    'assets/assets/logo.png',
+                    'assets/assets/logo.png', // Replace with your logo path
                     width: 100,
                     height: 100,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Icon(Icons.error, size: 100, color: Colors.white);
-                    },
                   ),
                   SizedBox(height: 20),
-                  // Title
                   Text(
                     isLogin ? 'Welcome Back!' : 'Create Account',
                     style: TextStyle(
-                      fontSize: 28,
+                      fontSize: 26,
+                      fontFamily: 'Inter',
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
-                      shadows: [
-                        Shadow(
-                          blurRadius: 4,
-                          color: Colors.black.withOpacity(0.3),
-                          offset: Offset(2, 2),
-                        ),
-                      ],
+                    ),
+                  ),
+                  SizedBox(height: 25),
+                  Card(
+                    elevation: 5,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    color: Colors.white.withOpacity(0.95),
+                    child: Padding(
+                      padding: const EdgeInsets.all(25.0),
+                      child: Column(
+                        children: [
+                          _buildTextField(Icons.email, 'Email'),
+                          SizedBox(height: 15),
+                          _buildTextField(Icons.lock, 'Password', isPassword: true),
+                          if (!isLogin) ...[
+                            SizedBox(height: 15),
+                            _buildTextField(Icons.lock, 'Confirm Password', isPassword: true),
+                          ],
+                          SizedBox(height: 25),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Color(0xFF405DE6), // Instagram blue
+                              padding: EdgeInsets.symmetric(horizontal: 80, vertical: 15),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              shadowColor: Colors.black26,
+                              elevation: 5,
+                            ),
+                            onPressed: () {
+                              Navigator.pushReplacementNamed(
+                                context,
+                                isLogin ? '/dashboard' : '/createAccount',
+                              );
+                            },
+                            child: Text(
+                              isLogin ? 'Login' : 'Sign Up',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontFamily: 'Inter',
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 15),
+                          TextButton(
+                            onPressed: () {
+                              setState(() {
+                                isLogin = !isLogin;
+                              });
+                            },
+                            child: Text(
+                              isLogin ? 'Create an account' : 'Already have an account? Login',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontFamily: 'Inter',
+                                color: Colors.black54,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   SizedBox(height: 20),
-                  // Input Fields
-                  _buildTextField(Icons.email, 'Email'),
-                  SizedBox(height: 16.0),
-                  _buildTextField(Icons.lock, 'Password', obscureText: true),
-                  SizedBox(height: 16.0),
-                  if (!isLogin) ...[
-                    _buildTextField(Icons.lock, 'Confirm Password', obscureText: true),
-                    SizedBox(height: 16.0),
-                  ],
-                  // Login Button
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Color(0xFF405DE6),
-                      backgroundColor: Colors.white.withOpacity(0.9),
-                      padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    onPressed: () {
-                      Navigator.pushReplacementNamed(
-                          context, isLogin ? '/addExpenses' : '/createAccount');
-                    },
-                    child: Text(
-                      isLogin ? 'Login' : 'Sign Up',
-                      style: TextStyle(fontSize: 18),
+                  Text(
+                    'Or continue with',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontFamily: 'Inter',
+                      color: Colors.white,
                     ),
                   ),
-                  SizedBox(height: 16.0),
-                  TextButton(
-                    onPressed: () {
-                      setState(() {
-                        isLogin = !isLogin;
-                      });
-                    },
-                    child: Text(
-                      isLogin ? 'Create an account' : 'Already have an account? Login',
-                      style: TextStyle(color: Colors.white, fontSize: 16),
-                    ),
-                  ),
-                  // OR Divider
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    child: Row(
-                      children: [
-                        Expanded(child: Divider(color: Colors.white, thickness: 1)),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: Text('OR', style: TextStyle(color: Colors.white, fontSize: 16)),
-                        ),
-                        Expanded(child: Divider(color: Colors.white, thickness: 1)),
-                      ],
-                    ),
-                  ),
-                  // Social Login Buttons
+                  SizedBox(height: 15),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _buildSocialButton('assets/assets/google.png', () {
-                        print("Google login tapped");
-                      }),
+                      _buildSocialButton('assets/assets/google.png', 'Google Login'), // Replace with your asset path
                       SizedBox(width: 20),
-                      _buildSocialButton('assets/assets/facebook.png', () {
-                        print("Facebook login tapped");
-                      }),
+                      _buildSocialButton('assets/assets/facebook.png', 'Facebook Login'), // Replace with your asset path
                     ],
                   ),
                 ],
@@ -136,39 +140,47 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
     );
   }
 
-  // Custom Input Field Widget
-  Widget _buildTextField(IconData icon, String hint, {bool obscureText = false}) {
+  Widget _buildTextField(IconData icon, String hint, {bool isPassword = false}) {
     return TextField(
-      obscureText: obscureText,
+      obscureText: isPassword,
       decoration: InputDecoration(
-        prefixIcon: Icon(icon, color: Colors.white),
+        prefixIcon: Icon(icon, color: Colors.black54),
         hintText: hint,
-        hintStyle: TextStyle(color: Colors.white70),
-        filled: true,
-        fillColor: Colors.white.withOpacity(0.2),
+        hintStyle: TextStyle(fontFamily: 'Inter', color: Colors.black45),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide.none,
+          borderSide: BorderSide(color: Colors.black12),
         ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: Colors.black12),
+        ),
+        filled: true,
+        fillColor: Colors.white,
       ),
-      style: TextStyle(color: Colors.white),
     );
   }
 
-  // Custom Social Button Widget
-  Widget _buildSocialButton(String assetPath, VoidCallback onTap) {
+  Widget _buildSocialButton(String assetPath, String tooltip) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () => print("$tooltip tapped"),
       child: Container(
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.white.withOpacity(0.2),
-        ),
         padding: EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 5,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
         child: Image.asset(
           assetPath,
-          width: 40,
-          height: 40,
+          width: 30,
+          height: 30,
         ),
       ),
     );

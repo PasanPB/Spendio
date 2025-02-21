@@ -27,151 +27,151 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         child: Center(
           child: SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(20.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.person_add, // User icon
-                    size: 80,
-                    color: Colors.white,
+                  // Logo
+                  Image.asset(
+                    'assets/assets/logo.png', // Replace with your logo path
+                    width: 100,
+                    height: 100,
                   ),
                   SizedBox(height: 20),
                   Text(
                     'Create Account',
                     style: TextStyle(
-                      fontSize: 28,
+                      fontSize: 26,
+                      fontFamily: 'Inter',
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
-                      shadows: [
-                        Shadow(
-                          blurRadius: 4,
-                          color: Colors.black.withOpacity(0.3),
-                          offset: Offset(2, 2),
-                        ),
-                      ],
+                    ),
+                  ),
+                  SizedBox(height: 25),
+                  Card(
+                    elevation: 5,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    color: Colors.white.withOpacity(0.95),
+                    child: Padding(
+                      padding: const EdgeInsets.all(25.0),
+                      child: Column(
+                        children: [
+                          _buildTextField(Icons.email, 'Email'),
+                          SizedBox(height: 15),
+                          _buildTextField(Icons.lock, 'Password', isPassword: true),
+                          SizedBox(height: 15),
+                          _buildTextField(Icons.lock, 'Confirm Password', isPassword: true),
+                          SizedBox(height: 25),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Color(0xFF405DE6), // Instagram blue
+                              padding: EdgeInsets.symmetric(horizontal: 80, vertical: 15),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              shadowColor: Colors.black26,
+                              elevation: 5,
+                            ),
+                            onPressed: () {
+                              // Handle signup logic here
+                            },
+                            child: Text(
+                              'Sign Up',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontFamily: 'Inter',
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 15),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(context); // Go back to the login page
+                            },
+                            child: Text(
+                              'Already have an account? Login',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontFamily: 'Inter',
+                                color: Colors.black54,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   SizedBox(height: 20),
-
-                  // Email Field
-                  TextField(
-                    decoration: InputDecoration(
-                      labelText: 'Email',
-                      labelStyle: TextStyle(color: Colors.white),
-                      prefixIcon: Icon(Icons.email, color: Colors.white),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: Colors.white),
-                      ),
-                      filled: true,
-                      fillColor: Colors.white.withOpacity(0.2),
-                    ),
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  SizedBox(height: 16.0),
-
-                  // Password Field
-                  TextField(
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      labelStyle: TextStyle(color: Colors.white),
-                      prefixIcon: Icon(Icons.lock, color: Colors.white),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: Colors.white),
-                      ),
-                      filled: true,
-                      fillColor: Colors.white.withOpacity(0.2),
-                    ),
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  SizedBox(height: 16.0),
-
-                  // Confirm Password Field
-                  TextField(
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      labelText: 'Confirm Password',
-                      labelStyle: TextStyle(color: Colors.white),
-                      prefixIcon: Icon(Icons.lock, color: Colors.white),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: Colors.white),
-                      ),
-                      filled: true,
-                      fillColor: Colors.white.withOpacity(0.2),
-                    ),
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  SizedBox(height: 16.0),
-
-                  // Signup Button
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Color(0xFF405DE6), backgroundColor: Colors.white.withOpacity(0.9),
-                      padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    onPressed: () {
-                      // Handle signup logic here
-                    },
-                    child: Text(
-                      'Sign Up',
-                      style: TextStyle(
-                        fontSize: 18,
-                      ),
+                  Text(
+                    'Or continue with',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontFamily: 'Inter',
+                      color: Colors.white,
                     ),
                   ),
-                  SizedBox(height: 16.0),
-
-                  // Already have an account? Login
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: Text(
-                      'Already have an account? Login',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-
-                  // Social Login Buttons
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SizedBox(
-                          width: 50,
-                          height: 50,
-                          child: IconButton(
-                            icon: Image.asset('assets/assets/google.png'),
-                            onPressed: () {},
-                          ),
-                        ),
-                        SizedBox(width: 20),
-                        SizedBox(
-                          width: 50,
-                          height: 50,
-                          child: IconButton(
-                            icon: Image.asset('assets/assets/facebook.png'),
-                            onPressed: () {},
-                          ),
-                        ),
-                      ],
-                    ),
+                  SizedBox(height: 15),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildSocialButton('assets/assets/google.png', 'Google Login'), // Replace with your asset path
+                      SizedBox(width: 20),
+                      _buildSocialButton('assets/assets/facebook.png', 'Facebook Login'), // Replace with your asset path
+                    ],
                   ),
                 ],
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField(IconData icon, String hint, {bool isPassword = false}) {
+    return TextField(
+      obscureText: isPassword,
+      decoration: InputDecoration(
+        prefixIcon: Icon(icon, color: Colors.black54),
+        hintText: hint,
+        hintStyle: TextStyle(fontFamily: 'Inter', color: Colors.black45),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: Colors.black12),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: Colors.black12),
+        ),
+        filled: true,
+        fillColor: Colors.white,
+      ),
+    );
+  }
+
+  Widget _buildSocialButton(String assetPath, String tooltip) {
+    return GestureDetector(
+      onTap: () => print("$tooltip tapped"),
+      child: Container(
+        padding: EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 5,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Image.asset(
+          assetPath,
+          width: 30,
+          height: 30,
         ),
       ),
     );
