@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
+import 'login.dart';
 
-class LoginSignupPage extends StatefulWidget {
+class SignupPage extends StatefulWidget {
   @override
-  _LoginSignupPageState createState() => _LoginSignupPageState();
+  _SignupPageState createState() => _SignupPageState();
 }
 
-class _LoginSignupPageState extends State<LoginSignupPage> {
-  bool isLogin = true;
-
+class _SignupPageState extends State<SignupPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -15,12 +14,12 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Color(0xFF405DE6), // Instagram blue
-              Color(0xFF5851DB), // Instagram purple
-              Color(0xFF833AB4), // Instagram violet
-              Color(0xFFC13584), // Instagram pink
-              Color(0xFFE1306C), // Instagram red
-              Color(0xFFFD1D1D), // Instagram orange
+              Color(0xFF405DE6),
+              Color(0xFF5851DB),
+              Color(0xFF833AB4),
+              Color(0xFFC13584),
+              Color(0xFFE1306C),
+              Color(0xFFFD1D1D),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -33,28 +32,16 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Logo
-                  Image.asset(
-                    'assets/assets/logo.png', // Replace with your logo path
-                    width: 100,
-                    height: 100,
-                  ),
+                  Image.asset('assets/assets/logo.png', width: 100, height: 100),
                   SizedBox(height: 20),
                   Text(
-                    isLogin ? 'Welcome Back!' : 'Create Account',
-                    style: TextStyle(
-                      fontSize: 26,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+                    'Create Account',
+                    style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                   SizedBox(height: 25),
                   Card(
                     elevation: 5,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                     color: Colors.white.withOpacity(0.95),
                     child: Padding(
                       padding: const EdgeInsets.all(25.0),
@@ -63,50 +50,28 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
                           _buildTextField(Icons.email, 'Email'),
                           SizedBox(height: 15),
                           _buildTextField(Icons.lock, 'Password', isPassword: true),
-                          if (!isLogin) ...[
-                            SizedBox(height: 15),
-                            _buildTextField(Icons.lock, 'Confirm Password', isPassword: true),
-                          ],
+                          SizedBox(height: 15),
+                          _buildTextField(Icons.lock, 'Confirm Password', isPassword: true),
                           SizedBox(height: 25),
                           ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(0xFF405DE6), // Instagram blue
+                              backgroundColor: Color(0xFF405DE6),
                               padding: EdgeInsets.symmetric(horizontal: 80, vertical: 15),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              shadowColor: Colors.black26,
-                              elevation: 5,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                             ),
                             onPressed: () {
-                              Navigator.pushReplacementNamed(
-                                context,
-                                isLogin ? '/dashboard' : '/createAccount',
-                              );
+                              Navigator.pushReplacementNamed(context, '/dashboard');
                             },
-                            child: Text(
-                              isLogin ? 'Login' : 'Sign Up',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontFamily: 'Inter',
-                                color: Colors.white,
-                              ),
-                            ),
+                            child: Text('Sign Up', style: TextStyle(fontSize: 18, color: Colors.white)),
                           ),
                           SizedBox(height: 15),
                           TextButton(
                             onPressed: () {
-                              setState(() {
-                                isLogin = !isLogin;
-                              });
+                              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage()));
                             },
                             child: Text(
-                              isLogin ? 'Create an account' : 'Already have an account? Login',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontFamily: 'Inter',
-                                color: Colors.black54,
-                              ),
+                              'Already have an account? Login',
+                              style: TextStyle(fontSize: 14, color: Colors.black54),
                             ),
                           ),
                         ],
@@ -114,21 +79,14 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
                     ),
                   ),
                   SizedBox(height: 20),
-                  Text(
-                    'Or continue with',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontFamily: 'Inter',
-                      color: Colors.white,
-                    ),
-                  ),
+                  Text('Or continue with', style: TextStyle(fontSize: 14, color: Colors.white)),
                   SizedBox(height: 15),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _buildSocialButton('assets/assets/google.png', 'Google Login'), // Replace with your asset path
+                      _buildSocialButton('assets/assets/google.png', 'Google Login'),
                       SizedBox(width: 20),
-                      _buildSocialButton('assets/assets/facebook.png', 'Facebook Login'), // Replace with your asset path
+                      _buildSocialButton('assets/assets/facebook.png', 'Facebook Login'),
                     ],
                   ),
                 ],
@@ -146,15 +104,7 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
       decoration: InputDecoration(
         prefixIcon: Icon(icon, color: Colors.black54),
         hintText: hint,
-        hintStyle: TextStyle(fontFamily: 'Inter', color: Colors.black45),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: Colors.black12),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: Colors.black12),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         filled: true,
         fillColor: Colors.white,
       ),
@@ -169,19 +119,8 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(10),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 5,
-              offset: Offset(0, 2),
-            ),
-          ],
         ),
-        child: Image.asset(
-          assetPath,
-          width: 30,
-          height: 30,
-        ),
+        child: Image.asset(assetPath, width: 30, height: 30),
       ),
     );
   }
