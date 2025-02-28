@@ -270,7 +270,7 @@ class _DashboardPageState extends State<DashboardPage> {
               return PieChartSectionData(
                 value: entry.value,
                 color: _categoryColors[entry.key], // Use category-specific color
-                title: '${entry.value}%',
+                title: '${entry.value}',
                 radius: 50,
                 titleStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
               );
