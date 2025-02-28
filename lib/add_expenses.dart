@@ -286,6 +286,60 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text('Dashboard'),
+        backgroundColor: Color(0xFF405DE6).withOpacity(0.8),
+        actions: [
+          // Menu Bar (PopupMenuButton)
+          PopupMenuButton<String>(
+            icon: Icon(Icons.more_vert, color: Colors.white),
+            onSelected: (String value) {
+              // Handle menu item selection
+              switch (value) {
+                case 'profile':
+                  print('Profile selected');
+                  break;
+                case 'predictive_analysis':
+                  print('Predictive Analysis selected');
+                  break;
+                case 'offers':
+                  print('Offers selected');
+                  break;
+                case 'contact_info':
+                  print('Contact Information selected');
+                  break;
+                case 'achievements':
+                  print('My Achievements selected');
+                  break;
+              }
+            },
+            itemBuilder: (BuildContext context) {
+              return [
+                PopupMenuItem(
+                  value: 'profile',
+                  child: Text('Profile'),
+                ),
+                PopupMenuItem(
+                  value: 'predictive_analysis',
+                  child: Text('Predictive Analysis'),
+                ),
+                PopupMenuItem(
+                  value: 'offers',
+                  child: Text('Offers'),
+                ),
+                PopupMenuItem(
+                  value: 'contact_info',
+                  child: Text('Contact Information'),
+                ),
+                PopupMenuItem(
+                  value: 'achievements',
+                  child: Text('My Achievements'),
+                ),
+              ];
+            },
+          ),
+        ],
+      ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
