@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'login.dart';
 
 class SignupPage extends StatefulWidget {
@@ -7,6 +9,46 @@ class SignupPage extends StatefulWidget {
 }
 
 class _SignupPageState extends State<SignupPage> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+  bool _isLoading = false;
+
+  Future<void> _signUp() async {
+    if (_passwordController.text != _confirmPasswordController.text) {
+      _showMessage("Passwords do not match!", Colors.red);
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    final url = Uri.parse("http://127.0.0.1:5000"); // Replace with your API
+    final response = await http.post(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "email": _emailController.text,
+        "password": _passwordController.text,
+      }),
+    );
+
+    setState(() => _isLoading = false);
+
+    if (response.statusCode == 201) {
+      _showMessage("Registration Successful!", Colors.green);
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage()));
+    } else {
+      _showMessage("Registration Failed!", Colors.red);
+    }
+  }
+
+  void _showMessage(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message, style: TextStyle(color: Colors.white)),
+      backgroundColor: color,
+    ));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -47,23 +89,23 @@ class _SignupPageState extends State<SignupPage> {
                       padding: const EdgeInsets.all(25.0),
                       child: Column(
                         children: [
-                          _buildTextField(Icons.email, 'Email'),
+                          _buildTextField(Icons.email, 'Email', _emailController),
                           SizedBox(height: 15),
-                          _buildTextField(Icons.lock, 'Password', isPassword: true),
+                          _buildTextField(Icons.lock, 'Password', _passwordController, isPassword: true),
                           SizedBox(height: 15),
-                          _buildTextField(Icons.lock, 'Confirm Password', isPassword: true),
+                          _buildTextField(Icons.lock, 'Confirm Password', _confirmPasswordController, isPassword: true),
                           SizedBox(height: 25),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(0xFF405DE6),
-                              padding: EdgeInsets.symmetric(horizontal: 80, vertical: 15),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                            ),
-                            onPressed: () {
-                              Navigator.pushReplacementNamed(context, '/dashboard');
-                            },
-                            child: Text('Sign Up', style: TextStyle(fontSize: 18, color: Colors.white)),
-                          ),
+                          _isLoading
+                              ? CircularProgressIndicator()
+                              : ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Color(0xFF405DE6),
+                                    padding: EdgeInsets.symmetric(horizontal: 80, vertical: 15),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  ),
+                                  onPressed: _signUp,
+                                  child: Text('Sign Up', style: TextStyle(fontSize: 18, color: Colors.white)),
+                                ),
                           SizedBox(height: 15),
                           TextButton(
                             onPressed: () {
@@ -78,17 +120,6 @@ class _SignupPageState extends State<SignupPage> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 20),
-                  Text('Or continue with', style: TextStyle(fontSize: 14, color: Colors.white)),
-                  SizedBox(height: 15),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildSocialButton('assets/assets/google.png', 'Google Login'),
-                      SizedBox(width: 20),
-                      _buildSocialButton('assets/assets/facebook.png', 'Facebook Login'),
-                    ],
-                  ),
                 ],
               ),
             ),
@@ -98,8 +129,9 @@ class _SignupPageState extends State<SignupPage> {
     );
   }
 
-  Widget _buildTextField(IconData icon, String hint, {bool isPassword = false}) {
+  Widget _buildTextField(IconData icon, String hint, TextEditingController controller, {bool isPassword = false}) {
     return TextField(
+      controller: controller,
       obscureText: isPassword,
       decoration: InputDecoration(
         prefixIcon: Icon(icon, color: Colors.black54),
@@ -107,20 +139,6 @@ class _SignupPageState extends State<SignupPage> {
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         filled: true,
         fillColor: Colors.white,
-      ),
-    );
-  }
-
-  Widget _buildSocialButton(String assetPath, String tooltip) {
-    return GestureDetector(
-      onTap: () => print("$tooltip tapped"),
-      child: Container(
-        padding: EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Image.asset(assetPath, width: 30, height: 30),
       ),
     );
   }
