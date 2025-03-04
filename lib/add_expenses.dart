@@ -44,6 +44,17 @@ class _DashboardPageState extends State<DashboardPage> {
   // Image Picker instance
   final ImagePicker _picker = ImagePicker();
 
+  // Notification counter (optional)
+  int _notificationCount = 3; // Example: 3 unread notifications
+
+  // Handle notification button click
+  void _handleNotificationClick() {
+    // Navigate to a notifications page or show a dialog
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('You have $_notificationCount new notifications')),
+    );
+  }
+
   // Scan bill logic
   Future<void> _scanBill() async {
     // Show a dialog to choose between camera and gallery
@@ -290,6 +301,39 @@ class _DashboardPageState extends State<DashboardPage> {
         title: Text('Dashboard'),
         backgroundColor: Color(0xFF405DE6).withOpacity(0.8),
         actions: [
+          // Notification Icon with Badge
+          Stack(
+            children: [
+              IconButton(
+                icon: Icon(Icons.notifications, color: Colors.white),
+                onPressed: _handleNotificationClick,
+              ),
+              if (_notificationCount > 0)
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    padding: EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    constraints: BoxConstraints(
+                      minWidth: 12,
+                      minHeight: 12,
+                    ),
+                    child: Text(
+                      '$_notificationCount',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 8,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          ),
           // Menu Bar (PopupMenuButton)
           PopupMenuButton<String>(
             icon: Icon(Icons.more_vert, color: Colors.white),
