@@ -44,8 +44,8 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Image.asset('assets/assets/logo.png', width: 100, height: 100),
-                  SizedBox(height: 20),
+                  Image.asset('assets/assets/logo.png', width: 300, height: 300),
+                  SizedBox(height: 40),
                   Text(
                     'Login to Your Account',
                     style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white),

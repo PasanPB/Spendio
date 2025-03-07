@@ -7,36 +7,45 @@ plugins {
 
 android {
     namespace = "com.example.flutter_finance_management"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 35  // Updated to the latest stable version
+
     ndkVersion = flutter.ndkVersion
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
-    }
 
     defaultConfig {
         applicationId = "com.example.flutter_finance_management"
-        
-        // Explicitly set the minSdkVersion to 21 or 23 (depending on your requirement)
-        minSdk = 23 // Or 21 if you want to support older devices
-        targetSdk = 28 // Set it to the target SDK version you want to support
+
+        // Minimum SDK version should be at least 21 or 23
+        minSdk = 23 
+        targetSdk = 35  // Updated to a higher version for compatibility
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
 
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+        coreLibraryDesugaringEnabled true
+    }
+
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            signingConfig = signingConfigs.debug
+            // Ensure you add a proper signing config for release builds
+            signingConfig signingConfigs.debug
         }
     }
 }
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    
+    // Core Library Desugaring (Required for Java 8+ features)
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
 }

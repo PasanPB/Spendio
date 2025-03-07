@@ -1,0 +1,6 @@
+{
+    "email": "user@example.com",
+    "password": "hashed_password",
+    "name": "John Doe",
+    "createdAt": new Date(),
+  }

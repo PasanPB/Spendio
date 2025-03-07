@@ -43,13 +43,13 @@ class _WelcomePageState extends State<WelcomePage> {
             children: [
               Image.asset(
                 'assets/assets/logo.png',  // Your app logo
-                width: 100,
-                height: 100,
+                width: 300,
+                height: 300,
                 errorBuilder: (context, error, stackTrace) {
                   return Icon(Icons.error, size: 100, color: Colors.white);
                 },
               ),
-              SizedBox(height: 20),
+              SizedBox(height: 80),
               Text(
                 'Welcome to Spendio',
                 style: TextStyle(

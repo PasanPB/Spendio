@@ -34,10 +34,10 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                   // Logo
                   Image.asset(
                     'assets/assets/logo.png', // Replace with your logo path
-                    width: 100,
-                    height: 100,
+                    width: 300,
+                    height: 300,
                   ),
-                  SizedBox(height: 20),
+                  SizedBox(height: 40),
                   Text(
                     'Create Account',
                     style: TextStyle(
