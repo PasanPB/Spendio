@@ -41,15 +41,22 @@ class _DashboardPageState extends State<DashboardPage> {
     'Other': Color(0xFFFD1D1D), // Red
   };
 
-  // Image Picker instance
-  final ImagePicker _picker = ImagePicker();
-
   // Notification counter (optional)
   int _notificationCount = 3; // Example: 3 unread notifications
 
+  // Image Picker instance
+  final ImagePicker _picker = ImagePicker();
+
+  // Plan selection
+  String _selectedPlan = 'Monthly'; // Default plan
+  final Map<String, double> _plans = {
+    'Daily': 0.0,
+    'Weekly': 0.0,
+    'Monthly': 0.0,
+  };
+
   // Handle notification button click
   void _handleNotificationClick() {
-    // Navigate to a notifications page or show a dialog
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('You have $_notificationCount new notifications')),
     );
@@ -57,7 +64,6 @@ class _DashboardPageState extends State<DashboardPage> {
 
   // Scan bill logic
   Future<void> _scanBill() async {
-    // Show a dialog to choose between camera and gallery
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -102,7 +108,6 @@ class _DashboardPageState extends State<DashboardPage> {
   // Show dialog to enter expense amount
   void _showExpenseDialog(String category) {
     TextEditingController _amountController = TextEditingController();
-
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -128,7 +133,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 String amount = _amountController.text;
                 if (amount.isNotEmpty) {
                   setState(() {
-                    _expenses[category] = double.parse(amount);
+                    _expenses[category] = (_expenses[category] ?? 0) + double.parse(amount);
                   });
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Expense for $category: Rs. $amount added')),
@@ -148,7 +153,6 @@ class _DashboardPageState extends State<DashboardPage> {
   void _showAddCategoryDialog() {
     TextEditingController _categoryController = TextEditingController();
     TextEditingController _amountController = TextEditingController();
-
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -207,83 +211,79 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  // Expense Button Widget with Animation
-  Widget _buildExpenseButton(String category) {
-    return TweenAnimationBuilder(
-      tween: Tween(begin: 0.0, end: 1.0),
-      duration: Duration(milliseconds: 500),
-      curve: Curves.easeInOut,
-      builder: (context, value, child) {
-        return Transform.scale(
-          scale: value,
-          child: child,
-        );
-      },
-      child: ElevatedButton(
-        onPressed: () {
-          _showExpenseDialog(category);
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: _categoryColors[category]!.withOpacity(0.8),
-          padding: EdgeInsets.all(8), // Reduced padding
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8), // Smaller border radius
+  // Show dialog to set budget plan
+  void _showPlanDialog() {
+    TextEditingController _budgetController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Set Budget for $_selectedPlan Plan'),
+          content: TextField(
+            controller: _budgetController,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              hintText: 'Enter budget amount',
+              prefixIcon: Icon(Icons.attach_money),
+            ),
           ),
-          elevation: 3,
-          shadowColor: Colors.black.withOpacity(0.2),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(_categoryIcons[category], size: 24, color: Colors.white), // Smaller icon
-            SizedBox(height: 4),
-            Text(
-              category,
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white), // Smaller text
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                String budget = _budgetController.text;
+                if (budget.isNotEmpty) {
+                  setState(() {
+                    _plans[_selectedPlan] = double.parse(budget);
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Budget for $_selectedPlan set to Rs. $budget')),
+                  );
+                }
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Text('Set Budget'),
             ),
           ],
-        ),
-      ),
+        );
+      },
     );
   }
 
   // Pie Chart Widget
   Widget _buildPieChart() {
-    return TweenAnimationBuilder(
-      tween: Tween(begin: 0.0, end: 1.0),
-      duration: Duration(milliseconds: 800),
-      curve: Curves.easeInOut,
-      builder: (context, value, child) {
-        return Opacity(
-          opacity: value,
-          child: Transform.scale(
-            scale: value,
-            child: child,
+    double totalExpenses = _expenses.values.reduce((a, b) => a + b);
+
+    return Container(
+      height: 250,
+      decoration: BoxDecoration(
+        color: Color(0xFFFEFBF3), // Background color
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: Offset(0, 4),
           ),
-        );
-      },
-      child: Container(
-        height: 200,
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.9),
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 8,
-              offset: Offset(0, 4),
-            ),
-          ],
-        ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: PieChart(
           PieChartData(
             sections: _expenses.entries.map((entry) {
+              double percentage = (entry.value / totalExpenses) * 100;
               return PieChartSectionData(
                 value: entry.value,
                 color: _categoryColors[entry.key], // Use category-specific color
-                title: '${entry.value}',
+                title: '${percentage.toStringAsFixed(1)}%', // Display percentage
                 radius: 50,
-                titleStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
+                titleStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
               );
             }).toList(),
             centerSpaceRadius: 40,
@@ -294,12 +294,342 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
+  // Total Expenses Card
+  Widget _buildTotalExpensesCard() {
+    double totalExpenses = _expenses.values.reduce((a, b) => a + b);
+
+    return Center(
+      child: Container(
+        width: MediaQuery.of(context).size.width * 0.9, // 90% of screen width
+        padding: EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF526D96), Color(0xFFEF9587)], // Gradient colors
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 12,
+              offset: Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.attach_money, size: 48, color: Colors.white),
+            SizedBox(height: 12),
+            Text(
+              'Total Expenses',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white70,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Rs. ${totalExpenses.toStringAsFixed(2)}',
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Plan Selection Dropdown with Enhanced Design
+  Widget _buildPlanSelection() {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      decoration: BoxDecoration(
+        color: Color(0xFFFEFBF3), // Background color
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'Plan:',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF526D96), // Primary color
+            ),
+          ),
+          InkWell(
+            onTap: () {
+              // Show a custom dialog for plan selection
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: Text(
+                      'Select Plan',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF526D96),
+                      ),
+                    ),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: ['Daily', 'Weekly', 'Monthly']
+                          .map((String plan) => ListTile(
+                                leading: Icon(
+                                  plan == 'Daily'
+                                      ? Icons.calendar_today
+                                      : plan == 'Weekly'
+                                          ? Icons.calendar_view_week
+                                          : Icons.calendar_month,
+                                  color: Color(0xFFEF9587),
+                                ),
+                                title: Text(
+                                  plan,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF526D96),
+                                  ),
+                                ),
+                                onTap: () {
+                                  setState(() {
+                                    _selectedPlan = plan;
+                                  });
+                                  Navigator.pop(context); // Close the dialog
+                                },
+                              ))
+                          .toList(),
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    backgroundColor: Color(0xFFFEFBF3), // Background color
+                  );
+                },
+              );
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Color(0xFFEEC3B4).withOpacity(0.8), // Accent color
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Text(
+                    _selectedPlan,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  Icon(Icons.arrow_drop_down, color: Colors.white),
+                ],
+              ),
+            ),
+          ),
+          ElevatedButton.icon(
+            onPressed: _showPlanDialog,
+            icon: Icon(Icons.edit, color: Colors.white),
+            label: Text(
+              'Set Budget',
+              style: TextStyle(color: Colors.white),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Color(0xFFEF9587), // Secondary color
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Expense Button Widget
+  Widget _buildExpenseButton(String category) {
+    return ElevatedButton(
+      onPressed: () {
+        _showExpenseDialog(category);
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: _categoryColors[category]!.withOpacity(0.8),
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(_categoryIcons[category], size: 20, color: Colors.white),
+          SizedBox(width: 8),
+          Text(
+            category,
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Menu Bar (Modern PopupMenuButton)
+  Widget _buildMenuBar() {
+    return PopupMenuButton<String>(
+      // Custom icon with animation
+      icon: TweenAnimationBuilder(
+        tween: Tween(begin: 0.0, end: 1.0),
+        duration: Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+        builder: (context, value, child) {
+          return Transform.scale(
+            scale: value,
+            child: IconButton(
+              icon: Icon(Icons.more_vert, color: Colors.white),
+              onPressed: () {},
+            ),
+          );
+        },
+      ),
+      onSelected: (String value) {
+        // Handle menu item selection
+        switch (value) {
+          case 'profile':
+            print('Profile selected');
+            break;
+          case 'analytics':
+            print('Analytics selected');
+            break;
+          case 'settings':
+            print('Settings selected');
+            break;
+          case 'help':
+            print('Help selected');
+            break;
+          case 'logout':
+            print('Logout selected');
+            break;
+        }
+      },
+      itemBuilder: (BuildContext context) {
+        return [
+          // Profile
+          PopupMenuItem(
+            value: 'profile',
+            child: _buildMenuItem(
+              icon: Icons.person,
+              text: 'Profile',
+              color: Color(0xFF405DE6), // Blue
+            ),
+          ),
+          // Analytics
+          PopupMenuItem(
+            value: 'analytics',
+            child: _buildMenuItem(
+              icon: Icons.analytics,
+              text: 'Analytics',
+              color: Color(0xFF833AB4), // Purple
+            ),
+          ),
+          // Settings
+          PopupMenuItem(
+            value: 'settings',
+            child: _buildMenuItem(
+              icon: Icons.settings,
+              text: 'Settings',
+              color: Color(0xFFE1306C), // Pink
+            ),
+          ),
+          // Help
+          PopupMenuItem(
+            value: 'help',
+            child: _buildMenuItem(
+              icon: Icons.help_outline,
+              text: 'Help',
+              color: Color(0xFF5851DB), // Indigo
+            ),
+          ),
+          // Logout
+          PopupMenuItem(
+            value: 'logout',
+            child: _buildMenuItem(
+              icon: Icons.logout,
+              text: 'Logout',
+              color: Color(0xFFFD1D1D), // Red
+            ),
+          ),
+        ];
+      },
+      offset: Offset(0, 40), // Adjust dropdown position
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12), // Rounded corners
+      ),
+      color: Color(0xFFFEFBF3), // Background color for dropdown
+    );
+  }
+
+  // Custom Menu Item Widget
+  Widget _buildMenuItem({required IconData icon, required String text, required Color color}) {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        gradient: LinearGradient(
+          colors: [color.withOpacity(0.8), color.withOpacity(0.4)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.white, size: 20),
+          SizedBox(width: 12),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Dashboard'),
-        backgroundColor: Color(0xFF405DE6).withOpacity(0.8),
+        title: Text('Finance Tracker'),
+        backgroundColor: Color(0xFF526D96), // Primary color
+        foregroundColor: Colors.white,
         actions: [
           // Notification Icon with Badge
           Stack(
@@ -334,183 +664,99 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
             ],
           ),
-          // Menu Bar (PopupMenuButton)
-          PopupMenuButton<String>(
-            icon: Icon(Icons.more_vert, color: Colors.white),
-            onSelected: (String value) {
-              // Handle menu item selection
-              switch (value) {
-                case 'profile':
-                  print('Profile selected');
-                  break;
-                case 'predictive_analysis':
-                  print('Predictive Analysis selected');
-                  break;
-                case 'offers':
-                  print('Offers selected');
-                  break;
-                case 'contact_info':
-                  print('Contact Information selected');
-                  break;
-                case 'achievements':
-                  print('My Achievements selected');
-                  break;
-              }
-            },
-            itemBuilder: (BuildContext context) {
-              return [
-                PopupMenuItem(
-                  value: 'profile',
-                  child: Text('Profile'),
-                ),
-                PopupMenuItem(
-                  value: 'predictive_analysis',
-                  child: Text('Predictive Analysis'),
-                ),
-                PopupMenuItem(
-                  value: 'offers',
-                  child: Text('Offers'),
-                ),
-                PopupMenuItem(
-                  value: 'contact_info',
-                  child: Text('Contact Information'),
-                ),
-                PopupMenuItem(
-                  value: 'achievements',
-                  child: Text('My Achievements'),
-                ),
-              ];
-            },
-          ),
+          // Modern Menu Bar
+          _buildMenuBar(),
         ],
       ),
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Color(0xFF405DE6),
-              Color(0xFF833AB4),
-              Color(0xFFE1306C),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
+        color: Color(0xFFFEFBF3), // Background color
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+            padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // App Logo
-                Center(
-                  child: Image.asset(
-                    'assets/assets/logo.png', // Replace with your logo path
-                    width: 100, // Adjust size as needed
-                    height: 100,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Icon(Icons.error, size: 100, color: Colors.white); // Fallback if image fails to load
-                    },
-                  ),
+                // Header Section
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Overview',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF526D96), // Primary color
+                      ),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: _scanBill,
+                      icon: Icon(Icons.camera_alt, color: Colors.white),
+                      label: Text(
+                        'Scan Bill',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFFEF9587), // Secondary color
+                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 SizedBox(height: 16),
-
-                Text(
-                  'Expense Overview',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
+                // Plan Selection Section
+                _buildPlanSelection(),
                 SizedBox(height: 16),
-
+                // Total Expenses Card
+                _buildTotalExpensesCard(),
+                SizedBox(height: 16),
                 // Pie Chart Section
+                Text(
+                  'Expense Breakdown',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF526D96), // Primary color
+                  ),
+                ),
+                SizedBox(height: 8),
                 _buildPieChart(),
                 SizedBox(height: 16),
-
-                // Scan Bill Button
-                Center(
-                  child: ElevatedButton.icon(
-                    onPressed: _scanBill,
-                    icon: Icon(Icons.camera_alt, color: Colors.white),
-                    label: Text('Scan Bill', style: TextStyle(color: Colors.white)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF405DE6).withOpacity(0.8),
-                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      elevation: 5,
-                      shadowColor: Colors.black.withOpacity(0.3),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 16),
-
-                // Display the scanned bill image (if available)
-                if (_billImage != null)
-                  Center(
-                    child: Column(
-                      children: [
-                        Text(
-                          'Scanned Bill:',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        SizedBox(height: 8),
-                        Container(
-                          height: 150,
-                          width: 150,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            image: DecorationImage(
-                              image: FileImage(_billImage!),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                // Expense Category Buttons
+                // Expense Buttons Grid
                 Text(
                   'Add Expenses',
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: Color(0xFF526D96), // Primary color
                   ),
                 ),
-                SizedBox(height: 12),
-
-                GridView(
+                SizedBox(height: 8),
+                GridView.builder(
                   shrinkWrap: true,
                   physics: NeverScrollableScrollPhysics(),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3, // More columns for smaller buttons
+                    crossAxisCount: 3,
                     crossAxisSpacing: 8,
                     mainAxisSpacing: 8,
-                    childAspectRatio: 1, // Adjust height of buttons
+                    childAspectRatio: 1.2,
                   ),
-                  children: _expenses.keys.map((category) {
+                  itemCount: _expenses.length,
+                  itemBuilder: (context, index) {
+                    String category = _expenses.keys.elementAt(index);
                     return _buildExpenseButton(category);
-                  }).toList(),
+                  },
                 ),
               ],
             ),
           ),
         ),
       ),
-
-      // Floating Action Button for Adding New Expense Category
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddCategoryDialog,
-        backgroundColor: Color(0xFF405DE6).withOpacity(0.8),
+        backgroundColor: Color(0xFF526D96), // Primary color
         child: Icon(Icons.add, color: Colors.white),
       ),
     );
