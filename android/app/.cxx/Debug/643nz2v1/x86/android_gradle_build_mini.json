@@ -1,0 +1,20 @@
+{
+  "buildFiles": [
+    "C:\\D folder\\Flutter\\flutter_windows_3.27.1-stable\\flutter\\packages\\flutter_tools\\gradle\\src\\main\\groovy\\CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "C:\\Users\\pasan\\AppData\\Local\\Android\\sdk\\cmake\\3.22.1\\bin\\ninja.exe",
+      "-C",
+      "C:\\D folder\\FYP\\Finance Management System\\Spendio\\flutter_finance_management\\android\\app\\.cxx\\Debug\\643nz2v1\\x86",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "C:\\Users\\pasan\\AppData\\Local\\Android\\sdk\\cmake\\3.22.1\\bin\\ninja.exe",
+    "-C",
+    "C:\\D folder\\FYP\\Finance Management System\\Spendio\\flutter_finance_management\\android\\app\\.cxx\\Debug\\643nz2v1\\x86",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {}
+}

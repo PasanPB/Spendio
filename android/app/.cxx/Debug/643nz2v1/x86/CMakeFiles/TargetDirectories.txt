@@ -1,0 +1,2 @@
+C:/D folder/FYP/Finance Management System/Spendio/flutter_finance_management/android/app/.cxx/Debug/643nz2v1/x86/CMakeFiles/edit_cache.dir
+C:/D folder/FYP/Finance Management System/Spendio/flutter_finance_management/android/app/.cxx/Debug/643nz2v1/x86/CMakeFiles/rebuild_cache.dir
