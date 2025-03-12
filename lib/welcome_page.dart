@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'login.dart';  // Import the login page
+import 'login.dart'; // Import the login page
+import 'colors.dart'; // Ensure this file contains your color definitions
 
 class WelcomePage extends StatefulWidget {
   @override
@@ -23,49 +24,49 @@ class _WelcomePageState extends State<WelcomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Color(0xFF405DE6),
-              Color(0xFF5851DB),
-              Color(0xFF833AB4),
-              Color(0xFFC13584),
-              Color(0xFFE1306C),
-              Color(0xFFFD1D1D),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
+        color: AppColors.background, // Use the same background color as LoginPage
         child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset(
-                'assets/assets/logo.png',  // Your app logo
-                width: 300,
-                height: 300,
-                errorBuilder: (context, error, stackTrace) {
-                  return Icon(Icons.error, size: 100, color: Colors.white);
-                },
-              ),
-              SizedBox(height: 80),
-              Text(
-                'Welcome to Spendio',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  shadows: [
-                    Shadow(
-                      blurRadius: 4,
-                      color: Colors.black.withOpacity(0.3),
-                      offset: Offset(2, 2),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // App Logo
+                  Image.asset(
+                    'assets/assets/logo.png', // Your app logo
+                    width: MediaQuery.of(context).size.width * 0.6, // Responsive sizing
+                    errorBuilder: (context, error, stackTrace) {
+                      return Icon(Icons.error, size: 100, color: AppColors.primary);
+                    },
+                  ),
+                  SizedBox(height: 80),
+                  // Welcome Text
+                  Text(
+                    'Welcome to Spendio',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
                     ),
-                  ],
-                ),
+                  ),
+                  SizedBox(height: 8),
+                  // Subtitle Text
+                  Text(
+                    'Manage your finances effortlessly',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  // Loading Indicator
+                  CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_finance_management/profile.dart';
 import 'login.dart';
 import 'signup.dart';
 import 'add_expenses.dart';
@@ -20,11 +21,13 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: WelcomePage(),
+      debugShowCheckedModeBanner: false, // Remove the debug banner
       routes: {
-        '/login': (context) => LoginPage(),
-        '/signup': (context) => SignupPage(),
-        '/addExpenses': (context) => DashboardPage(),
-      },
+  '/login': (context) => LoginPage(),
+  '/signup': (context) => SignupPage(),
+  '/addExpenses': (context) => DashboardPage(),
+  '/profile': (context) => ProfilePage(), // Add this line
+},
     );
   }
 }

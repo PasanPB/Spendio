@@ -1,5 +1,4 @@
 // ignore_for_file: avoid_print
-
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:image_picker/image_picker.dart'; // Add image_picker package
@@ -14,6 +13,7 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage> {
   File? _billImage;
+
   final Map<String, double> _expenses = {
     'Food': 0.0,
     'Transport': 0.0,
@@ -79,7 +79,8 @@ class _DashboardPageState extends State<DashboardPage> {
                 title: Text('Capture Photo'),
                 onTap: () async {
                   Navigator.pop(context); // Close the dialog
-                  final XFile? image = await _picker.pickImage(source: ImageSource.camera);
+                  final XFile? image =
+                      await _picker.pickImage(source: ImageSource.camera);
                   if (image != null) {
                     setState(() {
                       _billImage = File(image.path);
@@ -92,7 +93,8 @@ class _DashboardPageState extends State<DashboardPage> {
                 title: Text('Choose from Gallery'),
                 onTap: () async {
                   Navigator.pop(context); // Close the dialog
-                  final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+                  final XFile? image =
+                      await _picker.pickImage(source: ImageSource.gallery);
                   if (image != null) {
                     setState(() {
                       _billImage = File(image.path);
@@ -135,10 +137,12 @@ class _DashboardPageState extends State<DashboardPage> {
                 String amount = _amountController.text;
                 if (amount.isNotEmpty) {
                   setState(() {
-                    _expenses[category] = (_expenses[category] ?? 0) + double.parse(amount);
+                    _expenses[category] =
+                        (_expenses[category] ?? 0) + double.parse(amount);
                   });
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Expense for $category: Rs. $amount added')),
+                    SnackBar(
+                        content: Text('Expense for $category: Rs. $amount added')),
                   );
                 }
                 Navigator.of(context).pop(); // Close the dialog
@@ -196,11 +200,16 @@ class _DashboardPageState extends State<DashboardPage> {
                 if (category.isNotEmpty && amount.isNotEmpty) {
                   setState(() {
                     _expenses[category] = double.parse(amount);
-                    _categoryIcons[category] = Icons.category; // Default icon for new categories
-                    _categoryColors[category] = Colors.primaries[_expenses.length % Colors.primaries.length]; // Assign a random color
+                    _categoryIcons[category] =
+                        Icons.category; // Default icon for new categories
+                    _categoryColors[category] =
+                        Colors.primaries[_expenses.length %
+                            Colors.primaries.length]; // Assign a random color
                   });
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Added new category: $category with Rs. $amount')),
+                    SnackBar(
+                        content: Text(
+                            'Added new category: $category with Rs. $amount')),
                   );
                 }
                 Navigator.of(context).pop(); // Close the dialog
@@ -244,7 +253,8 @@ class _DashboardPageState extends State<DashboardPage> {
                     _plans[_selectedPlan] = double.parse(budget);
                   });
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Budget for $_selectedPlan set to Rs. $budget')),
+                    SnackBar(
+                        content: Text('Budget for $_selectedPlan set to Rs. $budget')),
                   );
                 }
                 Navigator.of(context).pop(); // Close the dialog
@@ -260,7 +270,6 @@ class _DashboardPageState extends State<DashboardPage> {
   // Pie Chart Widget
   Widget _buildPieChart() {
     double totalExpenses = _expenses.values.reduce((a, b) => a + b);
-
     return Container(
       height: 250,
       decoration: BoxDecoration(
@@ -285,7 +294,8 @@ class _DashboardPageState extends State<DashboardPage> {
                 color: _categoryColors[entry.key], // Use category-specific color
                 title: '${percentage.toStringAsFixed(1)}%', // Display percentage
                 radius: 50,
-                titleStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+                titleStyle: TextStyle(
+                    fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
               );
             }).toList(),
             centerSpaceRadius: 40,
@@ -299,7 +309,6 @@ class _DashboardPageState extends State<DashboardPage> {
   // Total Expenses Card
   Widget _buildTotalExpensesCard() {
     double totalExpenses = _expenses.values.reduce((a, b) => a + b);
-
     return Center(
       child: Container(
         width: MediaQuery.of(context).size.width * 0.9, // 90% of screen width
@@ -487,138 +496,97 @@ class _DashboardPageState extends State<DashboardPage> {
           SizedBox(width: 8),
           Text(
             category,
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Menu Bar (Modern PopupMenuButton)
-  Widget _buildMenuBar() {
-    return PopupMenuButton<String>(
-      // Custom icon with animation
-      icon: TweenAnimationBuilder(
-        tween: Tween(begin: 0.0, end: 1.0),
-        duration: Duration(milliseconds: 500),
-        curve: Curves.easeInOut,
-        builder: (context, value, child) {
-          return Transform.scale(
-            scale: value,
-            child: IconButton(
-              icon: Icon(Icons.more_vert, color: Colors.white),
-              onPressed: () {},
-            ),
-          );
-        },
-      ),
-      onSelected: (String value) {
-        // Handle menu item selection
-        switch (value) {
-          case 'profile':
-            print('Profile selected');
-            break;
-          case 'analytics':
-            print('Analytics selected');
-            break;
-          case 'settings':
-            print('Settings selected');
-            break;
-          case 'help':
-            print('Help selected');
-            break;
-          case 'logout':
-            print('Logout selected');
-            break;
-        }
-      },
-      itemBuilder: (BuildContext context) {
-        return [
-          // Profile
-          PopupMenuItem(
-            value: 'profile',
-            child: _buildMenuItem(
-              icon: Icons.person,
-              text: 'Profile',
-              color: Color(0xFF405DE6), // Blue
-            ),
-          ),
-          // Analytics
-          PopupMenuItem(
-            value: 'analytics',
-            child: _buildMenuItem(
-              icon: Icons.analytics,
-              text: 'Analytics',
-              color: Color(0xFF833AB4), // Purple
-            ),
-          ),
-          // Settings
-          PopupMenuItem(
-            value: 'settings',
-            child: _buildMenuItem(
-              icon: Icons.settings,
-              text: 'Settings',
-              color: Color(0xFFE1306C), // Pink
-            ),
-          ),
-          // Help
-          PopupMenuItem(
-            value: 'help',
-            child: _buildMenuItem(
-              icon: Icons.help_outline,
-              text: 'Help',
-              color: Color(0xFF5851DB), // Indigo
-            ),
-          ),
-          // Logout
-          PopupMenuItem(
-            value: 'logout',
-            child: _buildMenuItem(
-              icon: Icons.logout,
-              text: 'Logout',
-              color: Color(0xFFFD1D1D), // Red
-            ),
-          ),
-        ];
-      },
-      offset: Offset(0, 40), // Adjust dropdown position
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12), // Rounded corners
-      ),
-      color: Color(0xFFFEFBF3), // Background color for dropdown
-    );
-  }
-
-  // Custom Menu Item Widget
-  Widget _buildMenuItem({required IconData icon, required String text, required Color color}) {
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        gradient: LinearGradient(
-          colors: [color.withOpacity(0.8), color.withOpacity(0.4)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: Colors.white, size: 20),
-          SizedBox(width: 12),
-          Text(
-            text,
             style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+                fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Drawer Menu
+  Widget _buildDrawer() {
+    return Drawer(
+      backgroundColor: Color(0xFFFEFBF3), // Background color
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          // Header Section
+          DrawerHeader(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF526D96), Color(0xFFEF9587)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
             ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircleAvatar(
+                  radius: 30,
+                  backgroundImage: AssetImage('assets/assets/logo.png'), // Replace with your image
+                ),
+                SizedBox(height: 10),
+                Text(
+                  'John Doe', // Replace with user's name
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'john.doe@example.com', // Replace with user's email
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.white70,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Menu Items
+          ListTile(
+            leading: Icon(Icons.dashboard, color: Color(0xFF526D96)),
+            title: Text('Dashboard'),
+            onTap: () {
+              Navigator.pop(context); // Close the drawer
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.analytics, color: Color(0xFF833AB4)),
+            title: Text('Analytics'),
+            onTap: () {
+              Navigator.pop(context); // Close the drawer
+              print('Navigating to Analytics...');
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.settings, color: Color(0xFFE1306C)),
+            title: Text('Settings'),
+            onTap: () {
+              Navigator.pop(context); // Close the drawer
+              print('Navigating to Settings...');
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.help_outline, color: Color(0xFF5851DB)),
+            title: Text('Help'),
+            onTap: () {
+              Navigator.pop(context); // Close the drawer
+              print('Navigating to Help...');
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.logout, color: Color(0xFFFD1D1D)),
+            title: Text('Logout'),
+            onTap: () {
+              Navigator.pop(context); // Close the drawer
+              print('Logging out...');
+            },
           ),
         ],
       ),
@@ -666,10 +634,9 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
             ],
           ),
-          // Modern Menu Bar
-          _buildMenuBar(),
         ],
       ),
+      drawer: _buildDrawer(), // Add the drawer here
       body: Container(
         color: Color(0xFFFEFBF3), // Background color
         child: SingleChildScrollView(
@@ -699,7 +666,8 @@ class _DashboardPageState extends State<DashboardPage> {
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color(0xFFEF9587), // Secondary color
-                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
