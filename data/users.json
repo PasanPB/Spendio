@@ -1,14 +1,16 @@
 [
   {
-      "_id": "user123",
-      "name": "John Doe",
-      "email": "john.doe@example.com",
-      "createdAt": "2022-01-01T00:00:00Z"
+    "_id": "user123",
+    "name": "John Doe",
+    "email": "john.doe@example.com",
+    "password": "hashed_password_here",
+    "createdAt": "2022-01-01T00:00:00Z"
   },
   {
-      "_id": "user456",
-      "name": "Jane Smith",
-      "email": "jane.smith@example.com",
-      "createdAt": "2022-02-01T00:00:00Z"
+    "_id": "user456",
+    "name": "Jane Smith",
+    "email": "jane.smith@example.com",
+    "password": "hashed_password_here",
+    "createdAt": "2022-02-01T00:00:00Z"
   }
 ]

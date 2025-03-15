@@ -29,7 +29,7 @@ class _SignupPageState extends State<SignupPage> {
     setState(() => _isLoading = true);
 
     try {
-      final url = Uri.parse("https://your-production-api.com/register"); // Replace with your API
+      final url = Uri.parse("http://127.0.0.1:5000/register"); // Replace with your API
       final response = await http.post(
         url,
         headers: {"Content-Type": "application/json"},
