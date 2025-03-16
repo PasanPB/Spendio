@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'signup.dart'; // Ensure this file exists
 import 'add_expenses.dart'; // Ensure this file exists
 import 'colors.dart'; // Ensure this file contains your color definitions
@@ -12,17 +14,48 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
 
-  void _login() {
+  Future<void> _login() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    // Simulate navigation to the dashboard after successful login
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => DashboardPage()),
-    );
+    setState(() => _isLoading = true);
+
+    try {
+      // Define the API endpoint
+      final url = Uri.parse("http://10.0.2.2:5000/login"); // Use 10.0.2.2 for Android emulator localhost
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "email": emailController.text.trim(),
+          "password": passwordController.text.trim(),
+        }),
+      );
+
+      setState(() => _isLoading = false);
+
+      if (response.statusCode == 200) {
+        // Successful login
+        final responseData = jsonDecode(response.body);
+        print("Login successful: ${responseData["message"]}");
+
+        // Navigate to the dashboard or home screen
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => DashboardPage()),
+        );
+      } else {
+        // Handle login failure
+        final errorMessage = jsonDecode(response.body)["message"] ?? "Login Failed!";
+        _showMessage(errorMessage, AppColors.error);
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      _showMessage("An error occurred. Please try again.", AppColors.error);
+    }
   }
 
   void _googleLogin() async {
@@ -35,6 +68,15 @@ class _LoginPageState extends State<LoginPage> {
     // Placeholder for Facebook login logic
     print("Facebook Login Pressed");
     // Replace with actual Facebook Sign-In logic
+  }
+
+  void _showMessage(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: TextStyle(color: Colors.white)),
+        backgroundColor: color,
+      ),
+    );
   }
 
   @override
@@ -109,20 +151,22 @@ class _LoginPageState extends State<LoginPage> {
                               },
                             ),
                             SizedBox(height: 24),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              onPressed: _login,
-                              child: Text(
-                                'Login',
-                                style: TextStyle(fontSize: 18, color: Colors.white),
-                              ),
-                            ),
+                            _isLoading
+                                ? CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent))
+                                : ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppColors.primary,
+                                      padding: EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    onPressed: _login,
+                                    child: Text(
+                                      'Login',
+                                      style: TextStyle(fontSize: 18, color: Colors.white),
+                                    ),
+                                  ),
                             SizedBox(height: 16),
                             TextButton(
                               onPressed: () {
