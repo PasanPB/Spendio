@@ -42,7 +42,7 @@ class _LoginPageState extends State<LoginPage> {
         final responseData = jsonDecode(response.body);
         print("Login successful: ${responseData["message"]}");
 
-        // Navigate to the dashboard or home screen
+        // Navigate to the dashboard or to the home screen
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => DashboardPage()),
