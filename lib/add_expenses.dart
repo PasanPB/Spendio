@@ -39,7 +39,7 @@ class _DashboardPageState extends State<DashboardPage> {
     'Other': Icons.account_tree,
   };
 
-  // Color map for each category
+  // Color map for each expenses category
   final Map<String, Color> _categoryColors = {
     'Food': Color(0xFF405DE6), // Blue
     'Transport': Color(0xFF833AB4), // Purple
