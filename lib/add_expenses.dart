@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:image_picker/image_picker.dart'; // Add image_picker package
 import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -14,14 +16,18 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   File? _billImage;
 
-  final Map<String, double> _expenses = {
-    'Food': 0.0,
-    'Transport': 0.0,
-    'Groceries': 0.0,
-    'Clothes': 0.0,
-    'Rent': 0.0,
-    'Other': 0.0,
-  };
+  // Default categories
+  final List<String> _defaultCategories = [
+    'Food',
+    'Transport',
+    'Groceries',
+    'Clothes',
+    'Rent',
+    'Other',
+  ];
+
+  // Expenses map
+  final Map<String, double> _expenses = {};
 
   // Default icon map for predefined categories
   final Map<String, IconData> _categoryIcons = {
@@ -56,6 +62,136 @@ class _DashboardPageState extends State<DashboardPage> {
     'Weekly': 0.0,
     'Monthly': 0.0,
   };
+
+  // API Base URL
+  static const String _baseUrl = "http://10.0.2.2:5000"; // Replace with your API URL
+
+  // User data
+  Map<String, String> _userData = {
+    'name': 'John Doe', // Placeholder
+    'email': 'john.doe@example.com', // Placeholder
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchExpenses(); // Fetch expenses when the widget is initialized
+    _fetchUserData(); // Fetch user data when the widget is initialized
+  }
+
+  // Fetch user data from API
+  Future<void> _fetchUserData() async {
+    try {
+      final response = await http.get(Uri.parse('$_baseUrl/users/<user_id>')); // Replace with your API endpoint
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+        setState(() {
+          _userData = {
+            'name': data['name'],
+            'email': data['email'],
+          };
+        });
+      } else {
+        throw Exception('Failed to load user data');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to fetch user data: $e')),
+      );
+    }
+  }
+
+  // Fetch expenses from API
+  Future<void> _fetchExpenses() async {
+    try {
+      final response = await http.get(Uri.parse('$_baseUrl/transactions'));
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+
+        // Initialize _expenses with default categories and zero values
+        final Map<String, double> updatedExpenses = {};
+        for (var category in _defaultCategories) {
+          updatedExpenses[category] = 0.0;
+        }
+
+        // Update expenses from API data
+        for (var item in data) {
+          final String category = item['category'];
+          final double amount = (item['amount'] as num).toDouble();
+
+          if (updatedExpenses.containsKey(category)) {
+            updatedExpenses[category] = updatedExpenses[category]! + amount;
+          } else {
+            updatedExpenses[category] = amount; // Add new category if it doesn't exist
+          }
+        }
+
+        setState(() {
+          _expenses.clear();
+          _expenses.addAll(updatedExpenses);
+        });
+      } else {
+        throw Exception('Failed to load expenses');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to fetch expenses: $e')),
+      );
+    }
+  }
+
+  // Add expense to API
+  Future<void> _addExpenseToAPI(String category, double amount, String note) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/transactions'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'date': DateTime.now().toIso8601String(),
+          'userId': 'user123', // Replace with actual user ID
+          'category': category,
+          'subcategory': '', // Optional
+          'note': note,
+          'amount': amount,
+          'type': 'Expense',
+          'currency': 'LKR', // Replace with actual currency
+        }),
+      );
+      if (response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Expense added successfully')),
+        );
+        _fetchExpenses(); // Refresh the list
+      } else {
+        throw Exception('Failed to add expense');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to add expense: $e')),
+      );
+    }
+  }
+
+  // Clear all transactions
+  Future<void> _clearTransactions() async {
+    try {
+      final response = await http.delete(Uri.parse('$_baseUrl/transactions/<transaction_id>'));
+      if (response.statusCode == 200) {
+        setState(() {
+          _expenses.clear(); // Clear the local expenses map
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('All transactions cleared successfully')),
+        );
+      } else {
+        throw Exception('Failed to clear transactions');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to clear transactions: $e')),
+      );
+    }
+  }
 
   // Handle notification button click
   void _handleNotificationClick() {
@@ -112,18 +248,32 @@ class _DashboardPageState extends State<DashboardPage> {
   // Show dialog to enter expense amount
   void _showExpenseDialog(String category) {
     TextEditingController _amountController = TextEditingController();
+    TextEditingController _noteController = TextEditingController();
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Enter Expense for $category'),
-          content: TextField(
-            controller: _amountController,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(
-              hintText: 'Enter amount',
-              prefixIcon: Icon(Icons.attach_money),
-            ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _amountController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  hintText: 'Enter amount',
+                  prefixIcon: Icon(Icons.attach_money),
+                ),
+              ),
+              SizedBox(height: 10),
+              TextField(
+                controller: _noteController,
+                decoration: InputDecoration(
+                  hintText: 'Enter note (optional)',
+                  prefixIcon: Icon(Icons.note),
+                ),
+              ),
+            ],
           ),
           actions: [
             TextButton(
@@ -133,19 +283,26 @@ class _DashboardPageState extends State<DashboardPage> {
               child: Text('Cancel'),
             ),
             TextButton(
-              onPressed: () {
+              onPressed: () async {
                 String amount = _amountController.text;
+                String note = _noteController.text;
                 if (amount.isNotEmpty) {
-                  setState(() {
-                    _expenses[category] =
-                        (_expenses[category] ?? 0) + double.parse(amount);
-                  });
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                        content: Text('Expense for $category: Rs. $amount added')),
-                  );
+                  try {
+                    double parsedAmount = double.parse(amount);
+                    if (parsedAmount > 0) {
+                      await _addExpenseToAPI(category, parsedAmount, note);
+                      Navigator.of(context).pop(); // Close the dialog
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Please enter a positive amount')),
+                      );
+                    }
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Invalid amount entered')),
+                    );
+                  }
                 }
-                Navigator.of(context).pop(); // Close the dialog
               },
               child: Text('Add Expense'),
             ),
@@ -269,6 +426,15 @@ class _DashboardPageState extends State<DashboardPage> {
 
   // Pie Chart Widget
   Widget _buildPieChart() {
+    if (_expenses.isEmpty || _expenses.values.every((value) => value == 0)) {
+      return Center(
+        child: Text(
+          'No expenses added yet!',
+          style: TextStyle(fontSize: 16, color: Colors.grey),
+        ),
+      );
+    }
+
     double totalExpenses = _expenses.values.reduce((a, b) => a + b);
     return Container(
       height: 250,
@@ -530,7 +696,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
                 SizedBox(height: 10),
                 Text(
-                  'John Doe', // Replace with user's name
+                  _userData['name'] ?? 'John Doe', // Use fetched name or fallback to placeholder
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -539,7 +705,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
                 SizedBox(height: 4),
                 Text(
-                  'john.doe@example.com', // Replace with user's email
+                  _userData['email'] ?? 'john.doe@example.com', // Use fetched email or fallback to placeholder
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.white70,
@@ -634,6 +800,11 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
             ],
           ),
+          // Clear Transactions Button
+          IconButton(
+            icon: Icon(Icons.delete, color: Colors.white),
+            onPressed: _clearTransactions,
+          ),
         ],
       ),
       drawer: _buildDrawer(), // Add the drawer here
@@ -713,9 +884,9 @@ class _DashboardPageState extends State<DashboardPage> {
                     mainAxisSpacing: 8,
                     childAspectRatio: 1.2,
                   ),
-                  itemCount: _expenses.length,
+                  itemCount: _defaultCategories.length, // Use default categories
                   itemBuilder: (context, index) {
-                    String category = _expenses.keys.elementAt(index);
+                    String category = _defaultCategories[index]; // Get category from default list
                     return _buildExpenseButton(category);
                   },
                 ),
