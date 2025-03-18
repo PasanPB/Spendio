@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from pymongo import MongoClient
 from werkzeug.security import generate_password_hash, check_password_hash
 from bson.objectid import ObjectId
+from bson.errors import InvalidId  # Import InvalidId exception
 from datetime import datetime
 
 app = Flask(__name__)
@@ -33,7 +34,7 @@ def register():
             return jsonify({"message": "Email and password are required"}), 400
 
         existing_user = users_collection.find_one({"email": email})
-        if existing_user:
+        if (existing_user):
             return jsonify({"message": "Email already registered"}), 409
 
         hashed_password = generate_password_hash(password)
@@ -89,6 +90,36 @@ def get_user(user_id):
     except Exception as e:
         return jsonify({"message": str(e)}), 500
 
+@app.route('/users', methods=['GET'])
+def get_all_users():
+    try:
+        users = list(users_collection.find({}))
+        return jsonify([format_document(user) for user in users]), 200
+    except Exception as e:
+        return jsonify({"message": str(e)}), 500
+
+@app.route('/users', methods=['GET'])
+def get_user_by_query():
+    try:
+        user_id = request.args.get('user_id')  # Get user_id from query parameters
+        if not user_id:
+            return jsonify({"message": "user_id is required"}), 400
+
+        # Validate user_id
+        try:
+            user_id = ObjectId(user_id)
+        except InvalidId:
+            return jsonify({"message": f"'{user_id}' is not a valid ObjectId"}), 400
+
+        user = users_collection.find_one({"_id": user_id})
+        if not user:
+            return jsonify({"message": "User not found"}), 404
+
+        return jsonify(format_document(user)), 200
+
+    except Exception as e:
+        return jsonify({"message": str(e)}), 500
+
 # ==================== TRANSACTIONS ====================
 @app.route('/transactions', methods=['GET'])
 def get_transactions():
@@ -131,7 +162,13 @@ def add_transaction():
 @app.route('/transactions/<transaction_id>', methods=['GET'])
 def get_transaction(transaction_id):
     try:
-        transaction = transactions_collection.find_one({"_id": ObjectId(transaction_id)})
+        # Validate transaction_id
+        try:
+            transaction_id = ObjectId(transaction_id)
+        except InvalidId:
+            return jsonify({"message": f"'{transaction_id}' is not a valid ObjectId"}), 400
+
+        transaction = transactions_collection.find_one({"_id": transaction_id})
         if not transaction:
             return jsonify({"message": "Transaction not found"}), 404
 
@@ -143,11 +180,17 @@ def get_transaction(transaction_id):
 @app.route('/transactions/<transaction_id>', methods=['PUT'])
 def update_transaction(transaction_id):
     try:
+        # Validate transaction_id
+        try:
+            transaction_id = ObjectId(transaction_id)
+        except InvalidId:
+            return jsonify({"message": f"'{transaction_id}' is not a valid ObjectId"}), 400
+
         data = request.json
         updated_data = {k: v for k, v in data.items() if v is not None}
 
         result = transactions_collection.update_one(
-            {"_id": ObjectId(transaction_id)},
+            {"_id": transaction_id},
             {"$set": updated_data}
         )
 
@@ -162,7 +205,13 @@ def update_transaction(transaction_id):
 @app.route('/transactions/<transaction_id>', methods=['DELETE'])
 def delete_transaction(transaction_id):
     try:
-        result = transactions_collection.delete_one({"_id": ObjectId(transaction_id)})
+        # Validate transaction_id
+        try:
+            transaction_id = ObjectId(transaction_id)
+        except InvalidId:
+            return jsonify({"message": f"'{transaction_id}' is not a valid ObjectId"}), 400
+
+        result = transactions_collection.delete_one({"_id": transaction_id})
         if result.deleted_count == 0:
             return jsonify({"message": "Transaction not found"}), 404
 
@@ -171,14 +220,23 @@ def delete_transaction(transaction_id):
     except Exception as e:
         return jsonify({"message": str(e)}), 500
 
+@app.route('/transactions', methods=['GET'])
+def get_all_transactions():
+    try:
+        transactions = list(transactions_collection.find({}))
+        return jsonify([format_document(transaction) for transaction in transactions]), 200
+    except Exception as e:
+        return jsonify({"message": str(e)}), 500
+
 # ==================== BUDGETS ====================
 @app.route('/budgets', methods=['GET'])
 def get_budgets():
     try:
         budgets = list(budgets_collection.find({}))
+        print(f"Fetched budgets: {budgets}")  # Add logging
         return jsonify([format_document(b) for b in budgets]), 200
-
     except Exception as e:
+        print(f"Error fetching budgets: {e}")  # Add logging
         return jsonify({"message": str(e)}), 500
 
 @app.route('/budgets', methods=['POST'])
@@ -187,7 +245,7 @@ def add_budget():
         data = request.json
         category = data.get("category")
         limit = data.get("limit")
-        currency = data.get("currency", "INR")
+        currency = data.get("currency", "LKR")
 
         if not category or not limit:
             return jsonify({"message": "Category and limit are required"}), 400
@@ -211,7 +269,13 @@ def add_budget():
 @app.route('/budgets/<budget_id>', methods=['GET'])
 def get_budget(budget_id):
     try:
-        budget = budgets_collection.find_one({"_id": ObjectId(budget_id)})
+        # Validate budget_id
+        try:
+            budget_id = ObjectId(budget_id)
+        except InvalidId:
+            return jsonify({"message": f"'{budget_id}' is not a valid ObjectId"}), 400
+
+        budget = budgets_collection.find_one({"_id": budget_id})
         if not budget:
             return jsonify({"message": "Budget not found"}), 404
 
@@ -223,11 +287,17 @@ def get_budget(budget_id):
 @app.route('/budgets/<budget_id>', methods=['PUT'])
 def update_budget(budget_id):
     try:
+        # Validate budget_id
+        try:
+            budget_id = ObjectId(budget_id)
+        except InvalidId:
+            return jsonify({"message": f"'{budget_id}' is not a valid ObjectId"}), 400
+
         data = request.json
         updated_data = {k: v for k, v in data.items() if v is not None}
 
         result = budgets_collection.update_one(
-            {"_id": ObjectId(budget_id)},
+            {"_id": budget_id},
             {"$set": updated_data}
         )
 
@@ -242,12 +312,26 @@ def update_budget(budget_id):
 @app.route('/budgets/<budget_id>', methods=['DELETE'])
 def delete_budget(budget_id):
     try:
-        result = budgets_collection.delete_one({"_id": ObjectId(budget_id)})
+        # Validate budget_id
+        try:
+            budget_id = ObjectId(budget_id)
+        except InvalidId:
+            return jsonify({"message": f"'{budget_id}' is not a valid ObjectId"}), 400
+
+        result = budgets_collection.delete_one({"_id": budget_id})
         if result.deleted_count == 0:
             return jsonify({"message": "Budget not found"}), 404
 
         return jsonify({"message": "Budget deleted successfully"}), 200
 
+    except Exception as e:
+        return jsonify({"message": str(e)}), 500
+
+@app.route('/budgets', methods=['GET'])
+def get_all_budgets():
+    try:
+        budgets = list(budgets_collection.find({}))
+        return jsonify([format_document(budget) for budget in budgets]), 200
     except Exception as e:
         return jsonify({"message": str(e)}), 500
 
@@ -267,7 +351,7 @@ def add_prediction():
         data = request.json
         category = data.get("category")
         predicted_amount = data.get("predicted_amount")
-        currency = data.get("currency", "INR")
+        currency = data.get("currency", "LKR")
 
         if not category or not predicted_amount:
             return jsonify({"message": "Category and predicted amount are required"}), 400

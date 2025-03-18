@@ -1,7 +1,6 @@
 {
     "_id": "651a8f2b3c9d4e001c8f9d4b",
     "userId": "user123",
-    "category": "Food",
     "monthlyLimit": 2000,
     "yearMonth": "2023-10"
   }

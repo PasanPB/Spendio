@@ -1,6 +1,7 @@
 import os
 import json
 from pymongo import MongoClient
+from bson.objectid import ObjectId  # Import ObjectId
 
 # Step 1: Connect to MongoDB
 client = MongoClient("mongodb://localhost:27017/")  # Replace with your connection string if needed
@@ -32,9 +33,42 @@ for filename in os.listdir(data_directory):
         # Step 6: Insert the data into the collection
         try:
             if isinstance(data, list):  # Check if data is a list of documents
+                for document in data:
+                    # Convert _id to ObjectId if it exists
+                    if "_id" in document:
+                        try:
+                            document["_id"] = ObjectId(document["_id"])
+                        except Exception as e:
+                            print(f"Invalid _id format in document: {document}. Error: {e}")
+                            continue  # Skip invalid _id entries
+
+                    # Convert userId to ObjectId if it exists
+                    if "userId" in document:
+                        try:
+                            document["userId"] = ObjectId(document["userId"])
+                        except Exception as e:
+                            print(f"Invalid userId format in document: {document}. Error: {e}")
+                            continue  # Skip invalid userId entries
+
                 result = collection.insert_many(data)
                 print(f"Inserted {len(result.inserted_ids)} records into the '{collection_name}' collection.")
             elif isinstance(data, dict):  # Check if data is a single document
+                # Convert _id to ObjectId if it exists
+                if "_id" in data:
+                    try:
+                        data["_id"] = ObjectId(data["_id"])
+                    except Exception as e:
+                        print(f"Invalid _id format in document: {data}. Error: {e}")
+                        continue  # Skip invalid _id entries
+
+                # Convert userId to ObjectId if it exists
+                if "userId" in data:
+                    try:
+                        data["userId"] = ObjectId(data["userId"])
+                    except Exception as e:
+                        print(f"Invalid userId format in document: {data}. Error: {e}")
+                        continue  # Skip invalid userId entries
+
                 result = collection.insert_one(data)
                 print(f"Inserted 1 record into the '{collection_name}' collection.")
             else:
