@@ -1,10 +1,11 @@
 // ignore_for_file: avoid_print
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:image_picker/image_picker.dart'; // Add image_picker package
+import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'goals_page.dart'; // Add this import for the GoalsPage
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -15,8 +16,6 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage> {
   File? _billImage;
-
-  // Default categories
   final List<String> _defaultCategories = [
     'Food',
     'Transport',
@@ -25,11 +24,7 @@ class _DashboardPageState extends State<DashboardPage> {
     'Rent',
     'Other',
   ];
-
-  // Expenses map
   final Map<String, double> _expenses = {};
-
-  // Default icon map for predefined categories
   final Map<String, IconData> _categoryIcons = {
     'Food': Icons.fastfood,
     'Transport': Icons.directions_car,
@@ -38,51 +33,38 @@ class _DashboardPageState extends State<DashboardPage> {
     'Rent': Icons.house,
     'Other': Icons.account_tree,
   };
-
-  // Color map for each expenses category
   final Map<String, Color> _categoryColors = {
-    'Food': Color(0xFF405DE6), // Blue
-    'Transport': Color(0xFF833AB4), // Purple
-    'Groceries': Color(0xFFE1306C), // Pink
-    'Clothes': Color(0xFF5851DB), // Indigo
-    'Rent': Color(0xFFC13584), // Magenta
-    'Other': Color(0xFFFD1D1D), // Red
+    'Food': Color(0xFF405DE6),
+    'Transport': Color(0xFF833AB4),
+    'Groceries': Color(0xFFE1306C),
+    'Clothes': Color(0xFF5851DB),
+    'Rent': Color(0xFFC13584),
+    'Other': Color(0xFFFD1D1D),
   };
-
-  // Notification counter (optional)
-  int _notificationCount = 3; // Example: 3 unread notifications
-
-  // Image Picker instance
+  int _notificationCount = 3;
   final ImagePicker _picker = ImagePicker();
-
-  // Plan selection
-  String _selectedPlan = 'Monthly'; // Default plan
+  String _selectedPlan = 'Monthly';
   final Map<String, double> _plans = {
     'Daily': 0.0,
     'Weekly': 0.0,
     'Monthly': 0.0,
   };
-
-  // API Base URL
-  static const String _baseUrl = "http://10.0.2.2:5000"; // Replace with your API URL
-
-  // User data
+  static const String _baseUrl = "http://10.0.2.2:5000";
   Map<String, String> _userData = {
-    'name': 'John Doe', // Placeholder
-    'email': 'john.doe@example.com', // Placeholder
+    'name': 'John Doe',
+    'email': 'john.doe@example.com',
   };
 
   @override
   void initState() {
     super.initState();
-    _fetchExpenses(); // Fetch expenses when the widget is initialized
-    _fetchUserData(); // Fetch user data when the widget is initialized
+    _fetchExpenses();
+    _fetchUserData();
   }
 
-  // Fetch user data from API
   Future<void> _fetchUserData() async {
     try {
-      final response = await http.get(Uri.parse('$_baseUrl/users/<user_id>')); // Replace with your API endpoint
+      final response = await http.get(Uri.parse('$_baseUrl/users/<user_id>'));
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
         setState(() {
@@ -101,20 +83,16 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
-  // Fetch expenses from API
   Future<void> _fetchExpenses() async {
     try {
       final response = await http.get(Uri.parse('$_baseUrl/transactions'));
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
-
-        // Initialize _expenses with default categories and zero values
         final Map<String, double> updatedExpenses = {};
         for (var category in _defaultCategories) {
           updatedExpenses[category] = 0.0;
         }
 
-        // Update expenses from API data
         for (var item in data) {
           final String category = item['category'];
           final double amount = (item['amount'] as num).toDouble();
@@ -122,7 +100,7 @@ class _DashboardPageState extends State<DashboardPage> {
           if (updatedExpenses.containsKey(category)) {
             updatedExpenses[category] = updatedExpenses[category]! + amount;
           } else {
-            updatedExpenses[category] = amount; // Add new category if it doesn't exist
+            updatedExpenses[category] = amount;
           }
         }
 
@@ -140,7 +118,6 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
-  // Add expense to API
   Future<void> _addExpenseToAPI(String category, double amount, String note) async {
     try {
       final response = await http.post(
@@ -148,20 +125,20 @@ class _DashboardPageState extends State<DashboardPage> {
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'date': DateTime.now().toIso8601String(),
-          'userId': 'user123', // Replace with actual user ID
+          'userId': 'user123',
           'category': category,
-          'subcategory': '', // Optional
+          'subcategory': '',
           'note': note,
           'amount': amount,
           'type': 'Expense',
-          'currency': 'LKR', // Replace with actual currency
+          'currency': 'LKR',
         }),
       );
       if (response.statusCode == 201) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Expense added successfully')),
         );
-        _fetchExpenses(); // Refresh the list
+        _fetchExpenses();
       } else {
         throw Exception('Failed to add expense');
       }
@@ -172,13 +149,12 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
-  // Clear all transactions
   Future<void> _clearTransactions() async {
     try {
       final response = await http.delete(Uri.parse('$_baseUrl/transactions/<transaction_id>'));
       if (response.statusCode == 200) {
         setState(() {
-          _expenses.clear(); // Clear the local expenses map
+          _expenses.clear();
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('All transactions cleared successfully')),
@@ -193,14 +169,12 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
-  // Handle notification button click
   void _handleNotificationClick() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('You have $_notificationCount new notifications')),
     );
   }
 
-  // Scan bill logic
   Future<void> _scanBill() async {
     showDialog(
       context: context,
@@ -214,9 +188,8 @@ class _DashboardPageState extends State<DashboardPage> {
                 leading: Icon(Icons.camera_alt),
                 title: Text('Capture Photo'),
                 onTap: () async {
-                  Navigator.pop(context); // Close the dialog
-                  final XFile? image =
-                      await _picker.pickImage(source: ImageSource.camera);
+                  Navigator.pop(context);
+                  final XFile? image = await _picker.pickImage(source: ImageSource.camera);
                   if (image != null) {
                     setState(() {
                       _billImage = File(image.path);
@@ -228,9 +201,8 @@ class _DashboardPageState extends State<DashboardPage> {
                 leading: Icon(Icons.photo_library),
                 title: Text('Choose from Gallery'),
                 onTap: () async {
-                  Navigator.pop(context); // Close the dialog
-                  final XFile? image =
-                      await _picker.pickImage(source: ImageSource.gallery);
+                  Navigator.pop(context);
+                  final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
                   if (image != null) {
                     setState(() {
                       _billImage = File(image.path);
@@ -245,7 +217,6 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  // Show dialog to enter expense amount
   void _showExpenseDialog(String category) {
     TextEditingController _amountController = TextEditingController();
     TextEditingController _noteController = TextEditingController();
@@ -278,7 +249,7 @@ class _DashboardPageState extends State<DashboardPage> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
+                Navigator.of(context).pop();
               },
               child: Text('Cancel'),
             ),
@@ -291,7 +262,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     double parsedAmount = double.parse(amount);
                     if (parsedAmount > 0) {
                       await _addExpenseToAPI(category, parsedAmount, note);
-                      Navigator.of(context).pop(); // Close the dialog
+                      Navigator.of(context).pop();
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('Please enter a positive amount')),
@@ -312,7 +283,6 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  // Show dialog to add new expense category
   void _showAddCategoryDialog() {
     TextEditingController _categoryController = TextEditingController();
     TextEditingController _amountController = TextEditingController();
@@ -346,7 +316,7 @@ class _DashboardPageState extends State<DashboardPage> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
+                Navigator.of(context).pop();
               },
               child: Text('Cancel'),
             ),
@@ -357,19 +327,14 @@ class _DashboardPageState extends State<DashboardPage> {
                 if (category.isNotEmpty && amount.isNotEmpty) {
                   setState(() {
                     _expenses[category] = double.parse(amount);
-                    _categoryIcons[category] =
-                        Icons.category; // Default icon for new categories
-                    _categoryColors[category] =
-                        Colors.primaries[_expenses.length %
-                            Colors.primaries.length]; // Assign a random color
+                    _categoryIcons[category] = Icons.category;
+                    _categoryColors[category] = Colors.primaries[_expenses.length % Colors.primaries.length];
                   });
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                        content: Text(
-                            'Added new category: $category with Rs. $amount')),
+                    SnackBar(content: Text('Added new category: $category with Rs. $amount')),
                   );
                 }
-                Navigator.of(context).pop(); // Close the dialog
+                Navigator.of(context).pop();
               },
               child: Text('Add Category'),
             ),
@@ -379,7 +344,6 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  // Show dialog to set budget plan
   void _showPlanDialog() {
     TextEditingController _budgetController = TextEditingController();
     showDialog(
@@ -398,7 +362,7 @@ class _DashboardPageState extends State<DashboardPage> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
+                Navigator.of(context).pop();
               },
               child: Text('Cancel'),
             ),
@@ -410,11 +374,10 @@ class _DashboardPageState extends State<DashboardPage> {
                     _plans[_selectedPlan] = double.parse(budget);
                   });
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                        content: Text('Budget for $_selectedPlan set to Rs. $budget')),
+                    SnackBar(content: Text('Budget for $_selectedPlan set to Rs. $budget')),
                   );
                 }
-                Navigator.of(context).pop(); // Close the dialog
+                Navigator.of(context).pop();
               },
               child: Text('Set Budget'),
             ),
@@ -424,7 +387,6 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  // Pie Chart Widget
   Widget _buildPieChart() {
     if (_expenses.isEmpty || _expenses.values.every((value) => value == 0)) {
       return Center(
@@ -439,7 +401,7 @@ class _DashboardPageState extends State<DashboardPage> {
     return Container(
       height: 250,
       decoration: BoxDecoration(
-        color: Color(0xFFFEFBF3), // Background color
+        color: Color(0xFFFEFBF3),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -457,8 +419,8 @@ class _DashboardPageState extends State<DashboardPage> {
               double percentage = (entry.value / totalExpenses) * 100;
               return PieChartSectionData(
                 value: entry.value,
-                color: _categoryColors[entry.key], // Use category-specific color
-                title: '${percentage.toStringAsFixed(1)}%', // Display percentage
+                color: _categoryColors[entry.key],
+                title: '${percentage.toStringAsFixed(1)}%',
                 radius: 50,
                 titleStyle: TextStyle(
                     fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
@@ -472,16 +434,15 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  // Total Expenses Card
   Widget _buildTotalExpensesCard() {
     double totalExpenses = _expenses.values.reduce((a, b) => a + b);
     return Center(
       child: Container(
-        width: MediaQuery.of(context).size.width * 0.9, // 90% of screen width
+        width: MediaQuery.of(context).size.width * 0.9,
         padding: EdgeInsets.symmetric(vertical: 20, horizontal: 24),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF526D96), Color(0xFFEF9587)], // Gradient colors
+            colors: [Color(0xFF526D96), Color(0xFFEF9587)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -522,13 +483,12 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  // Plan Selection Dropdown with Enhanced Design
   Widget _buildPlanSelection() {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
       decoration: BoxDecoration(
-        color: Color(0xFFFEFBF3), // Background color
+        color: Color(0xFFFEFBF3),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -546,12 +506,11 @@ class _DashboardPageState extends State<DashboardPage> {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF526D96), // Primary color
+              color: Color(0xFF526D96),
             ),
           ),
           InkWell(
             onTap: () {
-              // Show a custom dialog for plan selection
               showDialog(
                 context: context,
                 builder: (BuildContext context) {
@@ -588,7 +547,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                   setState(() {
                                     _selectedPlan = plan;
                                   });
-                                  Navigator.pop(context); // Close the dialog
+                                  Navigator.pop(context);
                                 },
                               ))
                           .toList(),
@@ -596,7 +555,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    backgroundColor: Color(0xFFFEFBF3), // Background color
+                    backgroundColor: Color(0xFFFEFBF3),
                   );
                 },
               );
@@ -604,7 +563,7 @@ class _DashboardPageState extends State<DashboardPage> {
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: Color(0xFFEEC3B4).withOpacity(0.8), // Accent color
+                color: Color(0xFFEEC3B4).withOpacity(0.8),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
@@ -631,7 +590,7 @@ class _DashboardPageState extends State<DashboardPage> {
               style: TextStyle(color: Colors.white),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFFEF9587), // Secondary color
+              backgroundColor: Color(0xFFEF9587),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -642,7 +601,6 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  // Expense Button Widget
   Widget _buildExpenseButton(String category) {
     return ElevatedButton(
       onPressed: () {
@@ -670,14 +628,12 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  // Drawer Menu
   Widget _buildDrawer() {
     return Drawer(
-      backgroundColor: Color(0xFFFEFBF3), // Background color
+      backgroundColor: Color(0xFFFEFBF3),
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          // Header Section
           DrawerHeader(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -692,11 +648,11 @@ class _DashboardPageState extends State<DashboardPage> {
               children: [
                 CircleAvatar(
                   radius: 30,
-                  backgroundImage: AssetImage('assets/assets/logo.png'), // Replace with your image
+                  backgroundImage: AssetImage('assets/assets/logo.png'),
                 ),
                 SizedBox(height: 10),
                 Text(
-                  _userData['name'] ?? 'John Doe', // Use fetched name or fallback to placeholder
+                  _userData['name'] ?? 'John Doe',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -705,7 +661,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
                 SizedBox(height: 4),
                 Text(
-                  _userData['email'] ?? 'john.doe@example.com', // Use fetched email or fallback to placeholder
+                  _userData['email'] ?? 'john.doe@example.com',
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.white70,
@@ -714,19 +670,29 @@ class _DashboardPageState extends State<DashboardPage> {
               ],
             ),
           ),
-          // Menu Items
           ListTile(
             leading: Icon(Icons.dashboard, color: Color(0xFF526D96)),
             title: Text('Dashboard'),
             onTap: () {
-              Navigator.pop(context); // Close the drawer
+              Navigator.pop(context);
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.flag, color: Color(0xFF4CAF50)),
+            title: Text('Financial Goals'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => GoalsPage()),
+              );
             },
           ),
           ListTile(
             leading: Icon(Icons.analytics, color: Color(0xFF833AB4)),
             title: Text('Analytics'),
             onTap: () {
-              Navigator.pop(context); // Close the drawer
+              Navigator.pop(context);
               print('Navigating to Analytics...');
             },
           ),
@@ -734,7 +700,7 @@ class _DashboardPageState extends State<DashboardPage> {
             leading: Icon(Icons.settings, color: Color(0xFFE1306C)),
             title: Text('Settings'),
             onTap: () {
-              Navigator.pop(context); // Close the drawer
+              Navigator.pop(context);
               print('Navigating to Settings...');
             },
           ),
@@ -742,7 +708,7 @@ class _DashboardPageState extends State<DashboardPage> {
             leading: Icon(Icons.help_outline, color: Color(0xFF5851DB)),
             title: Text('Help'),
             onTap: () {
-              Navigator.pop(context); // Close the drawer
+              Navigator.pop(context);
               print('Navigating to Help...');
             },
           ),
@@ -750,7 +716,7 @@ class _DashboardPageState extends State<DashboardPage> {
             leading: Icon(Icons.logout, color: Color(0xFFFD1D1D)),
             title: Text('Logout'),
             onTap: () {
-              Navigator.pop(context); // Close the drawer
+              Navigator.pop(context);
               print('Logging out...');
             },
           ),
@@ -764,10 +730,9 @@ class _DashboardPageState extends State<DashboardPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Finance Tracker'),
-        backgroundColor: Color(0xFF526D96), // Primary color
+        backgroundColor: Color(0xFF526D96),
         foregroundColor: Colors.white,
         actions: [
-          // Notification Icon with Badge
           Stack(
             children: [
               IconButton(
@@ -800,23 +765,21 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
             ],
           ),
-          // Clear Transactions Button
           IconButton(
             icon: Icon(Icons.delete, color: Colors.white),
             onPressed: _clearTransactions,
           ),
         ],
       ),
-      drawer: _buildDrawer(), // Add the drawer here
+      drawer: _buildDrawer(),
       body: Container(
-        color: Color(0xFFFEFBF3), // Background color
+        color: Color(0xFFFEFBF3),
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header Section
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -825,7 +788,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF526D96), // Primary color
+                        color: Color(0xFF526D96),
                       ),
                     ),
                     ElevatedButton.icon(
@@ -836,7 +799,7 @@ class _DashboardPageState extends State<DashboardPage> {
                         style: TextStyle(color: Colors.white),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFFEF9587), // Secondary color
+                        backgroundColor: Color(0xFFEF9587),
                         padding:
                             EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         shape: RoundedRectangleBorder(
@@ -847,31 +810,27 @@ class _DashboardPageState extends State<DashboardPage> {
                   ],
                 ),
                 SizedBox(height: 16),
-                // Plan Selection Section
                 _buildPlanSelection(),
                 SizedBox(height: 16),
-                // Total Expenses Card
                 _buildTotalExpensesCard(),
                 SizedBox(height: 16),
-                // Pie Chart Section
                 Text(
                   'Expense Breakdown',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF526D96), // Primary color
+                    color: Color(0xFF526D96),
                   ),
                 ),
                 SizedBox(height: 8),
                 _buildPieChart(),
                 SizedBox(height: 16),
-                // Expense Buttons Grid
                 Text(
                   'Add Expenses',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF526D96), // Primary color
+                    color: Color(0xFF526D96),
                   ),
                 ),
                 SizedBox(height: 8),
@@ -884,9 +843,9 @@ class _DashboardPageState extends State<DashboardPage> {
                     mainAxisSpacing: 8,
                     childAspectRatio: 1.2,
                   ),
-                  itemCount: _defaultCategories.length, // Use default categories
+                  itemCount: _defaultCategories.length,
                   itemBuilder: (context, index) {
-                    String category = _defaultCategories[index]; // Get category from default list
+                    String category = _defaultCategories[index];
                     return _buildExpenseButton(category);
                   },
                 ),
@@ -897,7 +856,7 @@ class _DashboardPageState extends State<DashboardPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddCategoryDialog,
-        backgroundColor: Color(0xFF526D96), // Primary color
+        backgroundColor: Color(0xFF526D96),
         child: Icon(Icons.add, color: Colors.white),
       ),
     );
