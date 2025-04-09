@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_finance_management/profile.dart';
 import 'login.dart';
 import 'signup.dart';
-import 'add_expenses.dart';
+import 'add_expenses.dart' as addExpenses;
 import 'welcome_page.dart';
 
 void main() {
@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
       routes: {
   '/login': (context) => LoginPage(),
   '/signup': (context) => SignupPage(),
-  '/addExpenses': (context) => DashboardPage(),
+  '/addExpenses': (context) => addExpenses.DashboardPage(),
   '/profile': (context) => ProfilePage(), // Add this line
 },
     );
