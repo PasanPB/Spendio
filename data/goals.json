@@ -1,0 +1,9 @@
+{
+    "userId": "user123",
+    "title": "Buy a Car",
+    "targetAmount": 500000,
+    "currentAmount": 100000,
+    "deadline": "2025-12-31",
+    "description": "Save for a new car",
+    "currency": "LKR"
+}
