@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class GoalsPage extends StatefulWidget {
   const GoalsPage({super.key});
@@ -16,7 +18,7 @@ class _GoalsPageState extends State<GoalsPage> {
   DateTime? _targetDate;
   String _selectedPriority = 'Medium';
   String _selectedCategory = 'General';
-  bool _notifyOnProgress = false; // New feature: Notification toggle
+  bool _notifyOnProgress = false;
 
   final List<String> _priorityOptions = ['Low', 'Medium', 'High'];
   final List<String> _categoryOptions = [
@@ -28,6 +30,112 @@ class _GoalsPageState extends State<GoalsPage> {
     'Emergency Fund',
     'Retirement'
   ];
+
+  static const String _baseUrl = "http://10.0.2.2:5000"; // Adjust based on your Flask server
+  final String _userId = "user123"; // Replace with actual user ID after login
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchGoals(); // Fetch goals when the page loads
+  }
+
+  Future<void> _fetchGoals() async {
+    try {
+      final response = await http.get(Uri.parse('$_baseUrl/goals?user_id=$_userId'));
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        setState(() {
+          _goals.clear();
+          _goals.addAll(data.map((goal) => FinancialGoal.fromJson(goal)).toList());
+          _goals.sort((a, b) => a.targetDate.compareTo(b.targetDate));
+        });
+      } else {
+        throw Exception('Failed to load goals: ${response.body}');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to fetch goals: $e')));
+    }
+  }
+
+  Future<void> _addGoal(FinancialGoal goal) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/goals'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          "userId": _userId,
+          "title": goal.name,
+          "targetAmount": goal.targetAmount,
+          "currentAmount": goal.currentAmount,
+          "deadline": goal.targetDate.toIso8601String(),
+          "priority": goal.priority,
+          "category": goal.category,
+          "notifyOnProgress": goal.notifyOnProgress,
+          "currency": "LKR",
+        }),
+      );
+      if (response.statusCode == 201) {
+        final data = json.decode(response.body);
+        goal.id = data['goal_id']; // Set the ID from the server response
+        setState(() {
+          _goals.add(goal);
+          _goals.sort((a, b) => a.targetDate.compareTo(b.targetDate));
+        });
+        _checkProgressNotification(goal);
+      } else {
+        throw Exception('Failed to add goal: ${response.body}');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to add goal: $e')));
+    }
+  }
+
+  Future<void> _updateGoal(FinancialGoal goal) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$_baseUrl/goals/${goal.id}'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          "title": goal.name,
+          "targetAmount": goal.targetAmount,
+          "currentAmount": goal.currentAmount,
+          "deadline": goal.targetDate.toIso8601String(),
+          "priority": goal.priority,
+          "category": goal.category,
+          "notifyOnProgress": goal.notifyOnProgress,
+        }),
+      );
+      if (response.statusCode == 200) {
+        setState(() {
+          _goals.sort((a, b) => a.targetDate.compareTo(b.targetDate));
+        });
+        _checkProgressNotification(goal);
+      } else {
+        throw Exception('Failed to update goal: ${response.body}');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to update goal: $e')));
+    }
+  }
+
+  Future<void> _deleteGoal(String goalId) async {
+    try {
+      final response = await http.delete(Uri.parse('$_baseUrl/goals/$goalId'));
+      if (response.statusCode == 200) {
+        setState(() {
+          _goals.removeWhere((goal) => goal.id == goalId);
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Goal deleted successfully'), backgroundColor: Colors.red),
+        );
+      } else {
+        throw Exception('Failed to delete goal: ${response.body}');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to delete goal: $e')));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +153,7 @@ class _GoalsPageState extends State<GoalsPage> {
           ),
           IconButton(
             icon: const Icon(Icons.sort, color: Colors.white),
-            onPressed: _sortGoals, // New feature: Sort goals
+            onPressed: _sortGoals,
           ),
         ],
       ),
@@ -74,10 +182,7 @@ class _GoalsPageState extends State<GoalsPage> {
                   padding: const EdgeInsets.only(top: 16),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final goal = _goals[index];
-                        return _buildGoalCard(goal, index);
-                      },
+                      (context, index) => _buildGoalCard(_goals[index], index),
                       childCount: _goals.length,
                     ),
                   ),
@@ -86,7 +191,7 @@ class _GoalsPageState extends State<GoalsPage> {
             ),
       floatingActionButton: _goals.isNotEmpty
           ? FloatingActionButton(
-              onPressed: _showSavingsSuggestion, // New feature: Savings suggestion
+              onPressed: _showSavingsSuggestion,
               backgroundColor: const Color(0xFF4E7AC7),
               child: const Icon(Icons.calculate),
             )
@@ -118,7 +223,7 @@ class _GoalsPageState extends State<GoalsPage> {
                     Expanded(
                       child: Row(
                         children: [
-                          Icon(_getCategoryIcon(goal.category), color: Colors.blueGrey, size: 20), // New: Category icon
+                          Icon(_getCategoryIcon(goal.category), color: Colors.blueGrey, size: 20),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
@@ -148,7 +253,7 @@ class _GoalsPageState extends State<GoalsPage> {
                 Row(
                   children: [
                     Expanded(child: Text(goal.category, style: TextStyle(color: Colors.blueGrey[600], fontSize: 14))),
-                    if (isCompleted) const Icon(Icons.check_circle, color: Colors.green, size: 20), // Completion indicator
+                    if (isCompleted) const Icon(Icons.check_circle, color: Colors.green, size: 20),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -227,7 +332,7 @@ class _GoalsPageState extends State<GoalsPage> {
                         ),
                         IconButton(
                           icon: Icon(Icons.delete, size: 20, color: Colors.red[300]),
-                          onPressed: () => _deleteGoal(index),
+                          onPressed: () => _removeGoal(goal.id),
                         ),
                       ],
                     ),
@@ -329,7 +434,6 @@ class _GoalsPageState extends State<GoalsPage> {
               ),
             ),
             const SizedBox(height: 20),
-            // New feature: Timeline visualization
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(12)),
@@ -583,7 +687,6 @@ class _GoalsPageState extends State<GoalsPage> {
                 ),
               ),
               const SizedBox(height: 16),
-              // New feature: Notification toggle
               SwitchListTile(
                 title: const Text('Notify on Progress', style: TextStyle(fontSize: 16)),
                 subtitle: const Text('Get notified at 25%, 50%, 75%, and 100%'),
@@ -613,7 +716,7 @@ class _GoalsPageState extends State<GoalsPage> {
     );
   }
 
-  void _saveGoal() {
+  void _saveGoal() async {
     if (_goalNameController.text.isEmpty || _targetAmountController.text.isEmpty || _targetDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please fill all required fields'), backgroundColor: Colors.red),
@@ -624,22 +727,18 @@ class _GoalsPageState extends State<GoalsPage> {
     final currentAmount = _currentAmountController.text.isEmpty ? 0 : double.parse(_currentAmountController.text);
 
     final newGoal = FinancialGoal(
+      id: '', // ID will be set by the server
       name: _goalNameController.text,
       targetAmount: double.parse(_targetAmountController.text),
       currentAmount: currentAmount.toDouble(),
       targetDate: _targetDate!,
       priority: _selectedPriority,
       category: _selectedCategory,
-      notifyOnProgress: _notifyOnProgress, // New feature
+      notifyOnProgress: _notifyOnProgress,
     );
 
-    setState(() {
-      _goals.add(newGoal);
-      _goals.sort((a, b) => a.targetDate.compareTo(b.targetDate));
-    });
-
+    await _addGoal(newGoal);
     Navigator.pop(context);
-    _checkProgressNotification(newGoal); // Check initial progress
   }
 
   void _editGoal(int index) {
@@ -785,8 +884,8 @@ class _GoalsPageState extends State<GoalsPage> {
                   const SizedBox(width: 16),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {
-                        _updateGoal(index);
+                      onPressed: () async {
+                        _updateGoalAtIndex(index);
                         Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
@@ -806,9 +905,9 @@ class _GoalsPageState extends State<GoalsPage> {
     );
   }
 
-  void _addToGoal(int index) {
+  void _addToGoal(int index) async {
     final TextEditingController amountController = TextEditingController();
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -832,12 +931,13 @@ class _GoalsPageState extends State<GoalsPage> {
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               final amountToAdd = double.tryParse(amountController.text) ?? 0;
               if (amountToAdd > 0) {
                 setState(() {
                   _goals[index].currentAmount += amountToAdd;
                 });
+                await _updateGoal(_goals[index]);
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -845,7 +945,6 @@ class _GoalsPageState extends State<GoalsPage> {
                     backgroundColor: Colors.green,
                   ),
                 );
-                _checkProgressNotification(_goals[index]); // Check progress after adding
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF4E7AC7)),
@@ -856,41 +955,37 @@ class _GoalsPageState extends State<GoalsPage> {
     );
   }
 
-  void _updateGoal(int index) {
+  void _updateGoalAtIndex(int index) async {
     final currentAmount = _currentAmountController.text.isEmpty
         ? _goals[index].currentAmount
         : double.parse(_currentAmountController.text);
 
-    setState(() {
-      _goals[index] = FinancialGoal(
-        name: _goalNameController.text,
-        targetAmount: double.parse(_targetAmountController.text),
-        currentAmount: currentAmount,
-        targetDate: _targetDate!,
-        priority: _selectedPriority,
-        category: _selectedCategory,
-        notifyOnProgress: _notifyOnProgress,
-      );
-      _goals.sort((a, b) => a.targetDate.compareTo(b.targetDate));
-    });
-    _checkProgressNotification(_goals[index]);
+    _goals[index] = FinancialGoal(
+      id: _goals[index].id,
+      name: _goalNameController.text,
+      targetAmount: double.parse(_targetAmountController.text),
+      currentAmount: currentAmount,
+      targetDate: _targetDate!,
+      priority: _selectedPriority,
+      category: _selectedCategory,
+      notifyOnProgress: _notifyOnProgress,
+    );
+
+    await _updateGoal(_goals[index]);
   }
 
-  void _deleteGoal(int index) {
+  void _removeGoal(String goalId) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete Goal'),
-        content: Text('Are you sure you want to delete "${_goals[index].name}"? This action cannot be undone.'),
+        content: Text('Are you sure you want to delete "${_goals.firstWhere((g) => g.id == goalId).name}"? This action cannot be undone.'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: Text('Cancel', style: TextStyle(color: Colors.grey[700]))),
           ElevatedButton(
-            onPressed: () {
-              setState(() => _goals.removeAt(index));
+            onPressed: () async {
+              await _deleteGoal(goalId);
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Goal deleted successfully'), backgroundColor: Colors.red),
-              );
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('Delete'),
@@ -985,15 +1080,17 @@ class _GoalsPageState extends State<GoalsPage> {
 }
 
 class FinancialGoal {
+  String id; // Added to match MongoDB _id
   String name;
   double targetAmount;
   double currentAmount;
   DateTime targetDate;
   String priority;
   String category;
-  bool notifyOnProgress; // New feature
+  bool notifyOnProgress;
 
   FinancialGoal({
+    required this.id,
     required this.name,
     required this.targetAmount,
     required this.currentAmount,
@@ -1002,4 +1099,17 @@ class FinancialGoal {
     required this.category,
     this.notifyOnProgress = false,
   });
+
+  factory FinancialGoal.fromJson(Map<String, dynamic> json) {
+    return FinancialGoal(
+      id: json['_id'],
+      name: json['title'],
+      targetAmount: json['targetAmount'].toDouble(),
+      currentAmount: json['currentAmount'].toDouble(),
+      targetDate: DateTime.parse(json['deadline']),
+      priority: json['priority'] ?? 'Medium',
+      category: json['category'] ?? 'General',
+      notifyOnProgress: json['notifyOnProgress'] ?? false,
+    );
+  }
 }
