@@ -1,6 +1,30 @@
 {
-    "_id": "651a8f2b3c9d4e001c8f9d4c",
-    "userId": "user123",
-    "predictedMonth": "2023-11",
-    "predictedAmount": 15000
+  "predictions": {
+    "Food": {
+      "next_week": 500.00,
+      "next_month": 2000.00,
+      "next_year": 24000.00
+    },
+    "Transport": {
+      "next_week": 333.33,
+      "next_month": 1333.33,
+      "next_year": 16000.00
+    },
+    "Groceries": {
+      "next_week": 250.00,
+      "next_month": 1000.00,
+      "next_year": 12000.00
+    },
+    "Rent": {
+      "next_week": 1250.00,
+      "next_month": 5000.00,
+      "next_year": 60000.00
+    }
+  },
+  "suggestions": {
+    "Food": "Try meal prepping or reducing dining out to save Rs.400.00 monthly.",
+    "Transport": "Consider carpooling or public transport to save Rs.333.33 monthly.",
+    "Groceries": "Review expenses to identify savings of Rs.100.00 monthly.",
+    "Rent": "Review expenses to identify savings of Rs.500.00 monthly."
   }
+}
