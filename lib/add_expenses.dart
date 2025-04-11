@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'goals_page.dart';
+import 'predictive_analysis_page.dart'; // Import the PredictiveAnalysisPage
 import 'package:animate_do/animate_do.dart'; // For animations
 
 class DashboardPage extends StatefulWidget {
@@ -53,10 +54,10 @@ class _DashboardPageState extends State<DashboardPage> {
 
   Future<void> _fetchUserData() async {
     try {
-      final response = await http.get(Uri.parse('$_baseUrl/users/<user_id>'));
+      final response = await http.get(Uri.parse('$_baseUrl/users/<user_id>')); // Replace <user_id> with actual ID
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
-        setState(() => _userData = {'name': data['name'], 'email': data['email']});
+        setState(() => _userData = {'name': data['name'] ?? 'John Doe', 'email': data['email'] ?? 'john.doe@example.com'});
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to fetch user data: $e')));
@@ -65,7 +66,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   Future<void> _fetchExpenses() async {
     try {
-      final response = await http.get(Uri.parse('$_baseUrl/transactions'));
+      final response = await http.get(Uri.parse('$_baseUrl/transactions?user_id=user123')); // Add user_id
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         final Map<String, double> updatedExpenses = {for (var cat in _defaultCategories) cat: 0.0};
@@ -100,7 +101,7 @@ class _DashboardPageState extends State<DashboardPage> {
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'date': DateTime.now().toIso8601String(),
-          'userId': 'user123',
+          'userId': 'user123', // Replace with actual user ID
           'category': category,
           'subcategory': '',
           'note': note,
@@ -121,7 +122,8 @@ class _DashboardPageState extends State<DashboardPage> {
 
   Future<void> _clearTransactions() async {
     try {
-      final response = await http.delete(Uri.parse('$_baseUrl/transactions/<transaction_id>'));
+      // Note: This deletes a single transaction; adjust to clear all if needed
+      final response = await http.delete(Uri.parse('$_baseUrl/transactions/<transaction_id>')); // Replace with actual ID or endpoint
       if (response.statusCode == 200) {
         setState(() {
           _expenses.clear();
@@ -560,7 +562,10 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
           _buildDrawerItem(Icons.dashboard, 'Dashboard', () => Navigator.pop(context)),
           _buildDrawerItem(Icons.flag, 'Financial Goals', () => Navigator.push(context, MaterialPageRoute(builder: (context) => const GoalsPage()))),
-          _buildDrawerItem(Icons.analytics, 'Analytics', () => Navigator.pop(context)),
+          _buildDrawerItem(Icons.analytics, 'Analytics', () {
+            Navigator.pop(context); // Close the drawer
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const PredictiveAnalysisPage())); // Navigate to PredictiveAnalysisPage
+          }),
           _buildDrawerItem(Icons.settings, 'Settings', () => Navigator.pop(context)),
           _buildDrawerItem(Icons.help_outline, 'Help', () => Navigator.pop(context)),
           _buildDrawerItem(Icons.logout, 'Logout', () => Navigator.pop(context)),

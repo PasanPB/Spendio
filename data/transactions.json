@@ -1,10 +1,11 @@
 {
-  "predictions": {
-    "Food": {"next_week": 500.0, "next_month": 2000.0, "next_year": 24000.0},
-    "Transport": {"next_week": 333.33, "next_month": 1333.33, "next_year": 16000.0}
-  },
-  "suggestions": {
-    "Food": "Try meal prepping or reducing dining out to save Rs.400.00 monthly.",
-    "Transport": "Consider carpooling or public transport to save Rs.333.33 monthly."
-  }
+  "_id": "651a8f2b3c9d4e001c8f9d4a",
+  "date": "2022-03-02T10:11:00Z",
+  "userId": "user123",
+  "category": "Food",
+  "subcategory": "",
+  "note": "Brownie",
+  "amount": 50,
+  "type": "Expense",
+  "currency": "LKR"
 }

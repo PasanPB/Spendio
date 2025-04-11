@@ -3,7 +3,8 @@ from pymongo import MongoClient
 from werkzeug.security import generate_password_hash, check_password_hash
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
-from datetime import datetime
+from datetime import datetime, timedelta
+import statistics
 
 app = Flask(__name__)
 
@@ -16,11 +17,15 @@ users_collection = db["users"]
 transactions_collection = db["transactions"]
 budgets_collection = db["budgets"]
 predictions_collection = db["predictions"]
-goals_collection = db["goals"]  # New collection for goals
+goals_collection = db["goals"]
 
 # Helper function to format MongoDB documents
 def format_document(document):
     document["_id"] = str(document["_id"])  # Convert ObjectId to string
+    if "date" in document:
+        document["date"] = document["date"]  # Already a string from client
+    if "deadline" in document:
+        document["deadline"] = document["deadline"]  # Already a string from client
     return document
 
 # ==================== USERS ====================
@@ -122,7 +127,7 @@ def add_transaction():
             "date": data["date"],
             "userId": data["userId"],
             "category": data["category"],
-            "amount": data["amount"],
+            "amount": float(data["amount"]),
             "currency": data.get("currency", "LKR"),
             "note": data.get("note", ""),
             "type": data.get("type", "Expense"),
@@ -135,6 +140,8 @@ def add_transaction():
             "transaction_id": str(result.inserted_id)
         }), 201
 
+    except ValueError as e:
+        return jsonify({"message": f"Invalid amount: {str(e)}"}), 400
     except Exception as e:
         return jsonify({"message": str(e)}), 500
 
@@ -157,6 +164,8 @@ def update_transaction(transaction_id):
     try:
         data = request.json
         updated_data = {k: v for k, v in data.items() if v is not None}
+        if "amount" in updated_data:
+            updated_data["amount"] = float(updated_data["amount"])
 
         result = transactions_collection.update_one(
             {"_id": ObjectId(transaction_id)},
@@ -170,6 +179,8 @@ def update_transaction(transaction_id):
 
     except InvalidId:
         return jsonify({"message": f"'{transaction_id}' is not a valid ObjectId"}), 400
+    except ValueError as e:
+        return jsonify({"message": f"Invalid amount: {str(e)}"}), 400
     except Exception as e:
         return jsonify({"message": str(e)}), 500
 
@@ -209,7 +220,7 @@ def add_budget():
         new_budget = {
             "userId": data["userId"],
             "category": data["category"],
-            "limit": data["limit"],
+            "limit": float(data["limit"]),
             "currency": data.get("currency", "LKR"),
             "createdAt": datetime.utcnow().isoformat() + "Z"
         }
@@ -220,6 +231,8 @@ def add_budget():
             "budget_id": str(result.inserted_id)
         }), 201
 
+    except ValueError as e:
+        return jsonify({"message": f"Invalid limit: {str(e)}"}), 400
     except Exception as e:
         return jsonify({"message": str(e)}), 500
 
@@ -242,6 +255,8 @@ def update_budget(budget_id):
     try:
         data = request.json
         updated_data = {k: v for k, v in data.items() if v is not None}
+        if "limit" in updated_data:
+            updated_data["limit"] = float(updated_data["limit"])
 
         result = budgets_collection.update_one(
             {"_id": ObjectId(budget_id)},
@@ -255,6 +270,8 @@ def update_budget(budget_id):
 
     except InvalidId:
         return jsonify({"message": f"'{budget_id}' is not a valid ObjectId"}), 400
+    except ValueError as e:
+        return jsonify({"message": f"Invalid limit: {str(e)}"}), 400
     except Exception as e:
         return jsonify({"message": str(e)}), 500
 
@@ -295,7 +312,7 @@ def add_prediction():
         new_prediction = {
             "userId": data["userId"],
             "category": data["category"],
-            "predicted_amount": data["predicted_amount"],
+            "predicted_amount": float(data["predicted_amount"]),
             "currency": data.get("currency", "LKR"),
             "createdAt": datetime.utcnow().isoformat() + "Z"
         }
@@ -306,6 +323,8 @@ def add_prediction():
             "prediction_id": str(result.inserted_id)
         }), 201
 
+    except ValueError as e:
+        return jsonify({"message": f"Invalid predicted_amount: {str(e)}"}), 400
     except Exception as e:
         return jsonify({"message": str(e)}), 500
 
@@ -328,6 +347,8 @@ def update_prediction(prediction_id):
     try:
         data = request.json
         updated_data = {k: v for k, v in data.items() if v is not None}
+        if "predicted_amount" in updated_data:
+            updated_data["predicted_amount"] = float(updated_data["predicted_amount"])
 
         result = predictions_collection.update_one(
             {"_id": ObjectId(prediction_id)},
@@ -341,6 +362,8 @@ def update_prediction(prediction_id):
 
     except InvalidId:
         return jsonify({"message": f"'{prediction_id}' is not a valid ObjectId"}), 400
+    except ValueError as e:
+        return jsonify({"message": f"Invalid predicted_amount: {str(e)}"}), 400
     except Exception as e:
         return jsonify({"message": str(e)}), 500
 
@@ -387,6 +410,9 @@ def add_goal():
             "currentAmount": float(data["currentAmount"]),
             "deadline": data["deadline"],
             "description": data.get("description", ""),
+            "priority": data.get("priority", "Medium"),
+            "category": data.get("category", "General"),
+            "notifyOnProgress": data.get("notifyOnProgress", False),
             "currency": data.get("currency", "LKR"),
             "createdAt": datetime.utcnow().isoformat() + "Z",
             "updatedAt": datetime.utcnow().isoformat() + "Z"
@@ -456,6 +482,61 @@ def delete_goal(goal_id):
 
     except InvalidId:
         return jsonify({"message": f"'{goal_id}' is not a valid ObjectId"}), 400
+    except Exception as e:
+        return jsonify({"message": str(e)}), 500
+
+# ==================== PREDICTIVE ANALYSIS ====================
+@app.route('/predictive-analysis', methods=['GET'])
+def get_predictive_analysis():
+    try:
+        user_id = request.args.get('user_id')
+        if not user_id:
+            return jsonify({"message": "user_id is required"}), 400
+
+        # Fetch transactions for the user
+        transactions = list(transactions_collection.find({"userId": user_id}))
+        if not transactions:
+            return jsonify({"message": "No transactions found for analysis"}), 404
+
+        # Calculate spending per category over the last 3 months (example period)
+        three_months_ago = datetime.utcnow() - timedelta(days=90)
+        category_spending = {}
+        for t in transactions:
+            t_date = datetime.fromisoformat(t["date"].replace("Z", "+00:00"))
+            if t_date >= three_months_ago:
+                category = t["category"]
+                amount = float(t["amount"])
+                if category not in category_spending:
+                    category_spending[category] = []
+                category_spending[category].append(amount)
+
+        # Generate predictions and suggestions
+        predictions = {}
+        suggestions = {}
+        for category, amounts in category_spending.items():
+            avg_monthly = statistics.mean(amounts) if amounts else 0
+            predictions[category] = {
+                "next_week": avg_monthly / 4,  # Weekly estimate
+                "next_month": avg_monthly,     # Monthly average
+                "next_year": avg_monthly * 12  # Yearly projection
+            }
+
+            # Simple savings suggestions based on spending
+            if category.lower() == "food" and avg_monthly > 5000:
+                suggestions[category] = f"Try meal prepping or reducing dining out to save Rs.{(avg_monthly * 0.2):.2f} monthly."
+            elif category.lower() == "entertainment" and avg_monthly > 2000:
+                suggestions[category] = f"Cut back on subscriptions or outings to save Rs.{(avg_monthly * 0.3):.2f} monthly."
+            elif category.lower() == "transport" and avg_monthly > 3000:
+                suggestions[category] = f"Consider carpooling or public transport to save Rs.{(avg_monthly * 0.25):.2f} monthly."
+            elif avg_monthly > 1000:
+                suggestions[category] = f"Review expenses to identify savings of Rs.{(avg_monthly * 0.1):.2f} monthly."
+
+        response = {
+            "predictions": predictions,
+            "suggestions": suggestions
+        }
+        return jsonify(response), 200
+
     except Exception as e:
         return jsonify({"message": str(e)}), 500
 
